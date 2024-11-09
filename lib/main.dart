@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:UNISTOCK/services/notification_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 // Declare the navigator key globally
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -30,7 +31,8 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey, // Register the navigator key here
       home: AppWithNotificationListener(),
       routes: {
-        '/orderSummary': (context) => OrderSummaryPage(), // Add route for Order Summary
+        '/orderSummary': (context) =>
+            OrderSummaryPage(), // Add route for Order Summary
       },
     );
   }
@@ -38,10 +40,12 @@ class MyApp extends StatelessWidget {
 
 class AppWithNotificationListener extends StatefulWidget {
   @override
-  _AppWithNotificationListenerState createState() => _AppWithNotificationListenerState();
+  _AppWithNotificationListenerState createState() =>
+      _AppWithNotificationListenerState();
 }
 
-class _AppWithNotificationListenerState extends State<AppWithNotificationListener> {
+class _AppWithNotificationListenerState
+    extends State<AppWithNotificationListener> {
   final NotificationService _notificationService = NotificationService();
   late StreamSubscription<QuerySnapshot> _notificationSubscription;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -50,6 +54,7 @@ class _AppWithNotificationListenerState extends State<AppWithNotificationListene
   void initState() {
     super.initState();
     _setupNotificationListener();
+    requestNotificationPermission();
   }
 
   void _setupNotificationListener() {
@@ -71,16 +76,20 @@ class _AppWithNotificationListenerState extends State<AppWithNotificationListene
               final String title = data['title'] ?? 'No Title';
               final String message = data['message'] ?? 'No Message';
               final String timestamp = data['timestamp'] != null
-                  ? DateFormat.yMMMd().add_jm().format((data['timestamp'] as Timestamp).toDate())
+                  ? DateFormat.yMMMd()
+                      .add_jm()
+                      .format((data['timestamp'] as Timestamp).toDate())
                   : 'No Timestamp';
 
               // Construct the notification body with your desired format
-              final String notificationBody = "$message\n$title as of $timestamp";
+              final String notificationBody =
+                  "$message\n$title as of $timestamp";
 
               // Show the notification using NotificationService
               _notificationService.showNotification(
                 user.uid,
-                docChange.doc.id.hashCode, // Use document ID's hash as a unique ID
+                docChange
+                    .doc.id.hashCode, // Use document ID's hash as a unique ID
                 title,
                 notificationBody,
                 docChange.doc.id, // Pass the document ID as the fifth argument
@@ -89,6 +98,19 @@ class _AppWithNotificationListenerState extends State<AppWithNotificationListene
           }
         }
       });
+    }
+  }
+
+  Future<void> requestNotificationPermission() async {
+    PermissionStatus status = await Permission.notification.request();
+
+    if (status.isGranted) {
+      print("Notification permission granted");
+    } else if (status.isDenied) {
+      print("Notification permission denied");
+    } else if (status.isPermanentlyDenied) {
+      print("Notification permission permanently denied");
+      openAppSettings(); // Opens device settings to enable permission manually
     }
   }
 

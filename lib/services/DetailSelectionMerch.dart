@@ -70,7 +70,11 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
           });
 
           sizePrices = sizesMap.map((size, details) {
-            return MapEntry(size, details['price'] != null ? details['price'] as int? : widget.price);
+            return MapEntry(
+                size,
+                details['price'] != null
+                    ? details['price'] as int?
+                    : widget.price);
           });
 
           // Filter sizes to only include those with quantity > 0
@@ -97,11 +101,14 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
     }
   }
 
-  bool get showSizeOptions => widget.itemSize != null && availableSizes.isNotEmpty;
+  bool get showSizeOptions =>
+      widget.itemSize != null && availableSizes.isNotEmpty;
 
   bool get disableButtons {
     // Disable buttons if there are no sizes available or if the selected size is out of stock
-    if (availableSizes.isEmpty || _selectedSize.isEmpty || (sizeQuantities[_selectedSize] ?? 0) < _currentQuantity) {
+    if (availableSizes.isEmpty ||
+        _selectedSize.isEmpty ||
+        (sizeQuantities[_selectedSize] ?? 0) < _currentQuantity) {
       return true;
     }
     return false;
@@ -217,18 +224,17 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
   }
 
   Widget _buildButtonsRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+    return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          SizedBox(width: 40),
           Expanded(
             child: ElevatedButton(
               onPressed: disableButtons ? null : handleCheckout,
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                backgroundColor: disableButtons ? Colors.grey : Color(0xFFFFEB3B),
+                backgroundColor:
+                    disableButtons ? Colors.grey : Color(0xFFFFEB3B),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -290,6 +296,17 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
     );
   }
 
+  void viewImage() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Image.network(widget.imagePath),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -305,15 +322,19 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Image.network(
-                      widget.imagePath,
-                      height: 300,
-                      fit: BoxFit.cover,
+                    GestureDetector(
+                      onTap: viewImage,
+                      child: Image.network(
+                        widget.imagePath,
+                        height: 300,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     SizedBox(height: 16),
                     Text(
                       widget.label,
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     if (showSizeOptions) ...[
                       SizedBox(height: 10),
@@ -368,7 +389,8 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
           _selectedSize = value ?? '';
           _displayPrice = sizePrices[_selectedSize] ?? widget.price;
           _availableQuantity = sizeQuantities[_selectedSize] ?? 0;
-          _currentQuantity = 1; // Reset quantity to 1 whenever a new size is selected
+          _currentQuantity =
+              1; // Reset quantity to 1 whenever a new size is selected
         });
       },
     );
@@ -381,21 +403,22 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
         IconButton(
           onPressed: _currentQuantity > 1
               ? () {
-            setState(() {
-              _currentQuantity--;
-            });
-          }
+                  setState(() {
+                    _currentQuantity--;
+                  });
+                }
               : null,
           icon: Icon(Icons.remove),
         ),
         Text('$_currentQuantity'),
         IconButton(
-          onPressed: (_selectedSize.isNotEmpty && (sizeQuantities[_selectedSize] ?? 0) > _currentQuantity)
+          onPressed: (_selectedSize.isNotEmpty &&
+                  (sizeQuantities[_selectedSize] ?? 0) > _currentQuantity)
               ? () {
-            setState(() {
-              _currentQuantity++;
-            });
-          }
+                  setState(() {
+                    _currentQuantity++;
+                  });
+                }
               : null,
           icon: Icon(Icons.add),
         ),

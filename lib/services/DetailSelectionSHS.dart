@@ -59,12 +59,14 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
 
           setState(() {
             availableSizes = sizesMap.keys.toList();
-            sizeQuantities = sizesMap.map((size, details) =>
-                MapEntry(size, details['quantity'] ?? 0));
-            sizePrices = sizesMap.map((size, details) =>
-                MapEntry(size, details['price'] != null ? details['price'] as int : null));
+            sizeQuantities = sizesMap.map(
+                (size, details) => MapEntry(size, details['quantity'] ?? 0));
+            sizePrices = sizesMap.map((size, details) => MapEntry(size,
+                details['price'] != null ? details['price'] as int : null));
 
-            availableSizes = availableSizes.where((size) => sizeQuantities[size]! > 0).toList();
+            availableSizes = availableSizes
+                .where((size) => sizeQuantities[size]! > 0)
+                .toList();
 
             print('Available sizes after filtering: $availableSizes');
           });
@@ -98,7 +100,8 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
       return true;
     }
 
-    if (sizeQuantities[_selectedSize] == null || sizeQuantities[_selectedSize]! < _currentQuantity) {
+    if (sizeQuantities[_selectedSize] == null ||
+        sizeQuantities[_selectedSize]! < _currentQuantity) {
       return true;
     }
 
@@ -215,44 +218,70 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final int? sizePrice = sizePrices[_selectedSize];
-    final int displayPrice = sizePrice ?? widget.price;
+  void viewImage() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Image.network(widget.imagePath),
+        );
+      },
+    );
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.label),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
+@override
+Widget build(BuildContext context) {
+  final int? sizePrice = sizePrices[_selectedSize];
+  final int displayPrice = sizePrice ?? widget.price;
+
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(widget.label),
+    ),
+    body: Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  GestureDetector(
+                    onTap: viewImage,
+                    child: Image.network(
+                      widget.imagePath,
+                      height: 300,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    widget.label,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  if (availableSizes.isNotEmpty) ...[
+                    SizedBox(height: 10),
+                    _buildSizeSelector(),
+                  ],
+                  SizedBox(height: 10),
+                  Text(
+                    'Price: ₱$displayPrice',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  _buildQuantitySelector(),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Image.network(
-                widget.imagePath,
-                height: 300,
-                fit: BoxFit.cover,
-              ),
-              SizedBox(height: 16),
-              Text(
-                widget.label,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              if (availableSizes.isNotEmpty) ...[
-                SizedBox(height: 10),
-                _buildSizeSelector(),
-              ],
-
-              SizedBox(height: 10),
-              Text(
-                'Price: ₱$displayPrice',
-                style: TextStyle(fontSize: 20),
-              ),
-              _buildQuantitySelector(),
-              SizedBox(height: 20),
-
+              _buildButtonsRow(),
+              //show out of stock message only when no stocks available for the selected size
               if (sizeQuantities[_selectedSize] == 0 || _selectedSize.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
@@ -262,47 +291,85 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: disableButtons ? null : handleCheckout,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        textStyle: const TextStyle(fontSize: 12),
-                      ),
-                      child: const Text('Checkout'),
-                    ),
-                    const SizedBox(width: 8),
-                    OutlinedButton(
-                      onPressed: disableButtons ? null : handleAddToCart,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                        textStyle: const TextStyle(fontSize: 12),
-                      ),
-                      child: const Text('Add to Cart'),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: disableButtons ? null : handlePreOrder,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                        textStyle: const TextStyle(fontSize: 12, color: Colors.white),
-                      ),
-                      child: const Text('Pre-order'),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
+
+Widget _buildButtonsRow() {
+  return Center(
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: disableButtons ? null : handleCheckout,
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              backgroundColor: disableButtons ? Colors.grey : Color(0xFFFFEB3B),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text(
+              'Checkout',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 31, 31, 31),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: OutlinedButton(
+            onPressed: disableButtons ? null : handleAddToCart,
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              side: BorderSide(color: Colors.blue, width: 2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text(
+              'Add to Cart',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: handlePreOrder,
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              backgroundColor: Color(0xFF4CAF50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text(
+              'Pre-order',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildSizeSelector() {
     return AbsorbPointer(
@@ -311,9 +378,12 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
         value: _selectedSize.isEmpty ? null : _selectedSize,
         hint: Text('Select Size'),
         items: availableSizes.map((size) {
+          // Fetch the available quantity for the size
+          int availableQuantity = sizeQuantities[size] ?? 0;
           return DropdownMenuItem(
             value: size,
-            child: Text(size),
+            child: Text(
+                '$size (${availableQuantity} available)'), // Display size with available quantity
           );
         }).toList(),
         onChanged: (value) {
@@ -337,10 +407,10 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
         IconButton(
           onPressed: _currentQuantity > 1
               ? () {
-            setState(() {
-              _currentQuantity--;
-            });
-          }
+                  setState(() {
+                    _currentQuantity--;
+                  });
+                }
               : null,
           icon: Icon(Icons.remove),
         ),
@@ -348,10 +418,10 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
         IconButton(
           onPressed: _currentQuantity < (sizeQuantities[_selectedSize] ?? 0)
               ? () {
-            setState(() {
-              _currentQuantity++;
-            });
-          }
+                  setState(() {
+                    _currentQuantity++;
+                  });
+                }
               : null,
           icon: Icon(Icons.add),
         ),

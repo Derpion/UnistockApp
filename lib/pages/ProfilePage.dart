@@ -168,7 +168,6 @@ class _ProfilePageState extends State<ProfilePage> {
             'studentId': currentProfileInfo.studentId,
             'contactNumber': currentProfileInfo.contactNumber,
             'email': currentProfileInfo.email,
-            'address': currentProfileInfo.address,
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -220,9 +219,8 @@ class _ProfilePageState extends State<ProfilePage> {
           title: Text('About Us'),
           content: Text(
               "We’re a group of students from STI College Batangas who came together to make life a little easier for our fellow students. "
-                  "Our app, UniStock, helps streamline the process of buying uniforms and staying updated with school announcements. "
-                  "The team includes Charles Kenneth Adelantar, James Lawrence Peralta, Desiree Magadia, and Mac Ivan Llagas."
-          ),
+              "Our app, UniStock, helps streamline the process of buying uniforms and staying updated with school announcements. "
+              "The team includes Charles Kenneth Adelantar, James Lawrence Peralta, Desiree Magadia, and Mac Ivan Llagas."),
           actions: <Widget>[
             TextButton(
               child: Text('Close'),
@@ -270,34 +268,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 radius: 60,
                 backgroundImage: _imageUrl != null
                     ? NetworkImage(_imageUrl!)
-                    : AssetImage('assets/images/profilepict.png')
-                as ImageProvider,
+                    : AssetImage('assets/images/profilepictdefault.png')
+                        as ImageProvider,
                 backgroundColor: Colors.grey[200],
               ),
             ),
             SizedBox(height: 20),
             Text(
-              currentProfileInfo.name.isNotEmpty ? currentProfileInfo.name : "Name not available",
+              currentProfileInfo.name.isNotEmpty
+                  ? currentProfileInfo.name
+                  : "Name not available",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
-              ),
-            ),
-            SizedBox(height: 5),
-            Text(
-              currentProfileInfo.studentId.isNotEmpty ? currentProfileInfo.studentId : "Student ID not available",
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.black54,
-              ),
-            ),
-            SizedBox(height: 5),
-            Text(
-              currentProfileInfo.contactNumber.isNotEmpty ? currentProfileInfo.contactNumber : "Contact not available",
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.black54,
               ),
             ),
             SizedBox(height: 20),
@@ -316,7 +300,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               subtitle: Text(
-                currentProfileInfo.email.isNotEmpty ? currentProfileInfo.email : "Email not available",
+                currentProfileInfo.email.isNotEmpty
+                    ? currentProfileInfo.email
+                    : "Email not available",
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.black54,
@@ -325,16 +311,38 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             SizedBox(height: 10),
             ListTile(
-              leading: Icon(Icons.home, color: Color(0xFF046be0)),
+              leading: Icon(Icons.person, color: Color(0xFF046be0)),
               title: Text(
-                'Address',
+                'Student ID',
                 style: TextStyle(
                   fontSize: 18,
                   color: Colors.black87,
                 ),
               ),
               subtitle: Text(
-                currentProfileInfo.address.isNotEmpty ? currentProfileInfo.address : "Address not available",
+                currentProfileInfo.studentId.isNotEmpty
+                    ? currentProfileInfo.studentId
+                    : "Student ID not available",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            ListTile(
+              leading: Icon(Icons.phone, color: Color(0xFF046be0)),
+              title: Text(
+                'Contact Number',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black87,
+                ),
+              ),
+              subtitle: Text(
+                currentProfileInfo.contactNumber.isNotEmpty
+                    ? currentProfileInfo.contactNumber
+                    : "Contact Number is not available",
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.black54,
@@ -344,9 +352,12 @@ class _ProfilePageState extends State<ProfilePage> {
             Spacer(),
             ElevatedButton(
               onPressed: _logout,
-              child: Text('Logout'),
+              child: Text(
+                'Logout',
+                style: TextStyle(color: Colors.black),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFFFEB3B),
+                backgroundColor: Color.fromARGB(255, 255, 230, 0),
               ),
             ),
           ],

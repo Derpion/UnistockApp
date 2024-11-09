@@ -35,14 +35,14 @@ class _PreOrderPageState extends State<PreOrderPage> {
           .map((snapshot) => _aggregatePreOrderItems(snapshot.docs))
           .cast<List<CartItem>>();
 
-
       preOrderItemsSubscription = preOrderItemsStream.listen((items) {
         if (mounted) {
           setState(() {
             preOrderItems = items;
 
             if (selectAll) {
-              selectedItems = preOrderItems.map((item) => item.id.hashCode).toSet();
+              selectedItems =
+                  preOrderItems.map((item) => item.id.hashCode).toSet();
             } else {
               selectedItems = preOrderItems
                   .where((item) => item.selected)
@@ -81,7 +81,10 @@ class _PreOrderPageState extends State<PreOrderPage> {
           selected: existingItem.selected,
           category: existingItem.category,
           courseLabel: existingItem.courseLabel,
-          documentReferences: [...existingItem.documentReferences, doc.reference],
+          documentReferences: [
+            ...existingItem.documentReferences,
+            doc.reference
+          ],
         );
       } else {
         groupedItems[uniqueKey] = CartItem(
@@ -115,11 +118,13 @@ class _PreOrderPageState extends State<PreOrderPage> {
     final User? user = auth.currentUser;
 
     if (user != null) {
-      final preOrderCollection = firestore.collection('users').doc(user.uid).collection('preorders');
+      final preOrderCollection =
+          firestore.collection('users').doc(user.uid).collection('preorders');
       final WriteBatch batch = firestore.batch();
 
       List<Map<String, dynamic>> preOrderDetails = [];
-      List<Map<String, dynamic>> orderSummary = []; // This will store each item for the notification summary
+      List<Map<String, dynamic>> orderSummary =
+          []; // This will store each item for the notification summary
 
       for (CartItem item in preOrderItems) {
         if (item.selected) {
@@ -171,7 +176,8 @@ class _PreOrderPageState extends State<PreOrderPage> {
     }
   }
 
-  Future<void> updatePreOrderItemSelection(List<DocumentReference> docRefs, bool? selected) async {
+  Future<void> updatePreOrderItemSelection(
+      List<DocumentReference> docRefs, bool? selected) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     final WriteBatch batch = firestore.batch();
 
@@ -202,7 +208,8 @@ class _PreOrderPageState extends State<PreOrderPage> {
       final firstDoc = preOrderDocs.docs.first;
       final int unitPrice = firstDoc['price'] ~/ firstDoc['quantity'];
 
-      int totalQuantity = preOrderDocs.docs.fold(0, (sum, doc) => sum + (doc['quantity'] as int));
+      int totalQuantity = preOrderDocs.docs
+          .fold(0, (sum, doc) => sum + (doc['quantity'] as int));
       totalQuantity += change;
 
       if (totalQuantity > 0) {
@@ -258,7 +265,8 @@ class _PreOrderPageState extends State<PreOrderPage> {
         }
 
         setState(() {
-          preOrderItems = preOrderItems.where((item) => item.label != label).toList();
+          preOrderItems =
+              preOrderItems.where((item) => item.label != label).toList();
         });
       }
     }
@@ -304,10 +312,10 @@ class _PreOrderPageState extends State<PreOrderPage> {
             child: SingleChildScrollView(
               child: Text(
                 '1. Pre-order Agreement: By placing a pre-order, you agree to pay in advance for items that will be delivered at a later date...\n\n'
-                    '2. Expected Delivery: Pre-order items may have longer delivery times. Please review the expected delivery date before confirming...\n\n'
-                    '3. Changes and Cancellations: You can cancel your pre-order before the expected shipment date. Once processed, cancellations may not be allowed...\n\n'
-                    '4. Payment Terms: Full payment is required at the time of pre-order confirmation. We will notify you of any delays...\n\n'
-                    '5. Contact: For any inquiries, please reach out to [Contact Information].',
+                '2. Expected Delivery: Pre-order items may have longer delivery times. Please review the expected delivery date before confirming...\n\n'
+                '3. Changes and Cancellations: You can cancel your pre-order before the expected shipment date. Once processed, cancellations may not be allowed...\n\n'
+                '4. Payment Terms: Full payment is required at the time of pre-order confirmation. We will notify you of any delays...\n\n'
+                '5. Contact: For any inquiries, please reach out to [Contact Information].',
                 style: TextStyle(fontSize: 14),
               ),
             ),
@@ -476,9 +484,9 @@ class _PreOrderPageState extends State<PreOrderPage> {
                             icon: Icon(Icons.remove, size: isMobile ? 16 : 24),
                             onPressed: item.quantity > 1
                                 ? () {
-                              handleQuantityChanged(
-                                  item.label, item.selectedSize, -1);
-                            }
+                                    handleQuantityChanged(
+                                        item.label, item.selectedSize, -1);
+                                  }
                                 : null,
                           ),
                           Text(

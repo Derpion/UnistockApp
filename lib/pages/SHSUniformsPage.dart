@@ -28,7 +28,8 @@ class _SHSUniformsPageState extends State<SHSUniformsPage> {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('Inventory_stock')
-          .doc('senior_high_items') // Assuming you're fetching from 'senior_high_items'
+          .doc(
+              'senior_high_items') // Assuming you're fetching from 'senior_high_items'
           .collection('Items')
           .get();
 
@@ -105,57 +106,56 @@ class _SHSUniformsPageState extends State<SHSUniformsPage> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'SHS Uniforms',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'SHS Uniforms',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Sort and Filter',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        PopupMenuButton<String>(
+                          icon: Icon(Icons.sort),
+                          onSelected: (String result) {
+                            setState(() {
+                              selectedSortOption = result;
+                              sortItems(result);
+                            });
+                          },
+                          itemBuilder: (BuildContext context) =>
+                              <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'Sort by price ascending',
+                              child: Text('Sort by price ascending'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'Sort by price descending',
+                              child: Text('Sort by price descending'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    buildItemGrid(context),
+                    SizedBox(height: 16),
+                  ],
                 ),
               ),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Sort and Filter',
-                    style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  PopupMenuButton<String>(
-                    icon: Icon(Icons.sort),
-                    onSelected: (String result) {
-                      setState(() {
-                        selectedSortOption = result;
-                        sortItems(result);
-                      });
-                    },
-                    itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<String>>[
-                      const PopupMenuItem<String>(
-                        value: 'Sort by price ascending',
-                        child: Text('Sort by price ascending'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'Sort by price descending',
-                        child: Text('Sort by price descending'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              buildItemGrid(context),
-              SizedBox(height: 16),
-              buildNoSizeOption(context, 'No possible size?'),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -188,7 +188,8 @@ class _SHSUniformsPageState extends State<SHSUniformsPage> {
     int parsedPrice = 0; // Default value if price is not available
     if (price != null && price.isNotEmpty) {
       try {
-        parsedPrice = int.parse(price.replaceAll(RegExp(r'[^\d]'), '')); // Remove non-numeric characters
+        parsedPrice = int.parse(price.replaceAll(
+            RegExp(r'[^\d]'), '')); // Remove non-numeric characters
       } catch (e) {
         print('Error parsing price: $e');
       }
@@ -205,7 +206,8 @@ class _SHSUniformsPageState extends State<SHSUniformsPage> {
               imagePath: imagePath, // Pass Firebase Storage URL
               price: parsedPrice, // Use the parsed price value
               quantity: 1,
-              currentProfileInfo: widget.currentProfileInfo, // Pass the profile info
+              currentProfileInfo:
+                  widget.currentProfileInfo, // Pass the profile info
             ),
           ),
         );
@@ -227,7 +229,8 @@ class _SHSUniformsPageState extends State<SHSUniformsPage> {
                   width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.error); // Show an error icon if image fails to load
+                    return Icon(Icons
+                        .error); // Show an error icon if image fails to load
                   },
                 ),
               ),

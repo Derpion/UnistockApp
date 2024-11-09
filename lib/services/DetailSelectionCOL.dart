@@ -70,19 +70,23 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
           return;
         }
 
-        if (data.containsKey('sizes') && data['sizes'] is Map<String, dynamic>) {
+        if (data.containsKey('sizes') &&
+            data['sizes'] is Map<String, dynamic>) {
           var sizesData = data['sizes'] as Map<String, dynamic>;
 
           sizePrices = sizesData.map((size, details) {
-            if (details is Map<String, dynamic> && details.containsKey('price')) {
-              return MapEntry(size, details['price'] != null ? details['price'] as int? : null);
+            if (details is Map<String, dynamic> &&
+                details.containsKey('price')) {
+              return MapEntry(size,
+                  details['price'] != null ? details['price'] as int? : null);
             } else {
               return MapEntry(size, null);
             }
           });
 
           sizeQuantities = sizesData.map((size, details) {
-            if (details is Map<String, dynamic> && details.containsKey('quantity')) {
+            if (details is Map<String, dynamic> &&
+                details.containsKey('quantity')) {
               return MapEntry(size, details['quantity'] ?? 0);
             } else {
               return MapEntry(size, 0);
@@ -90,11 +94,18 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
           });
 
           // Filter sizes to only include those with quantity > 0
-          availableSizes = sizeQuantities.keys.where((size) => sizeQuantities[size]! > 0).toList();
+          availableSizes = sizeQuantities.keys
+              .where((size) => sizeQuantities[size]! > 0)
+              .toList();
 
-          String defaultSize = availableSizes.isNotEmpty ? availableSizes.first : '';
-          int initialQuantity = defaultSize.isNotEmpty ? sizeQuantities[defaultSize] ?? 0 : 0;
-          int initialPrice = defaultSize.isNotEmpty && sizePrices[defaultSize] != null ? sizePrices[defaultSize]! : widget.price;
+          String defaultSize =
+              availableSizes.isNotEmpty ? availableSizes.first : '';
+          int initialQuantity =
+              defaultSize.isNotEmpty ? sizeQuantities[defaultSize] ?? 0 : 0;
+          int initialPrice =
+              defaultSize.isNotEmpty && sizePrices[defaultSize] != null
+                  ? sizePrices[defaultSize]!
+                  : widget.price;
 
           setState(() {
             _selectedSize = _selectedSize.isEmpty ? defaultSize : _selectedSize;
@@ -186,7 +197,6 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
     }
   }
 
-
   void handleAddToCart() async {
     if (availableSizes.isNotEmpty && _selectedSize.isEmpty) {
       showSizeNotSelectedDialog();
@@ -245,114 +255,187 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
     );
   }
 
+  void viewImage() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Image.network(widget.imagePath),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final int? sizePrice = sizePrices[_selectedSize];
+    final int displayPrice = sizePrice ?? widget.price;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.label),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Image.network(
-                widget.imagePath,
-                height: 300,
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                widget.label,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              if (availableSizes.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                _buildSizeSelector(),
-              ],
-              const SizedBox(height: 10),
-              Text(
-                'Price: ₱$_displayPrice',
-                style: const TextStyle(fontSize: 20),
-              ),
-              _buildQuantitySelector(),
-              const SizedBox(height: 30),
-
-              // Show out-of-stock message only when no stock is available for the selected size
-              if (_availableQuantity == 0 || _selectedSize.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: Text(
-                    'This item is either out of stock or requires a size selection.',
-                    style: TextStyle(color: Colors.red, fontSize: 14),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ElevatedButton(
-                      onPressed: disableButtons ? null : handleCheckout,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        textStyle: const TextStyle(fontSize: 12),
+                    GestureDetector(
+                      onTap: viewImage,
+                      child: Image.network(
+                        widget.imagePath,
+                        height: 300,
+                        fit: BoxFit.cover,
                       ),
-                      child: const Text('Checkout'),
                     ),
-                    const SizedBox(width: 8),
-                    OutlinedButton(
-                      onPressed: disableButtons ? null : handleAddToCart,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                        textStyle: const TextStyle(fontSize: 12),
-                      ),
-                      child: const Text('Add to Cart'),
+                    SizedBox(height: 16),
+                    Text(
+                      widget.label,
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: handlePreOrder,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                        textStyle: const TextStyle(fontSize: 12, color: Colors.white),
-                      ),
-                      child: const Text('Pre-order'),
+                    if (availableSizes.isNotEmpty) ...[
+                      SizedBox(height: 10),
+                      _buildSizeSelector(),
+                    ],
+                    SizedBox(height: 10),
+                    Text(
+                      'Price: ₱$displayPrice',
+                      style: TextStyle(fontSize: 20),
                     ),
+                    _buildQuantitySelector(),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildButtonsRow(),
+                //show out of stock message only when no stocks available for the selected size
+                if (sizeQuantities[_selectedSize] == 0 || _selectedSize.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Text(
+                      'This item is either out of stock or requires a size selection.',
+                      style: TextStyle(color: Colors.red, fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButtonsRow() {
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: disableButtons ? null : handleCheckout,
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                backgroundColor:
+                    disableButtons ? Colors.grey : Color(0xFFFFEB3B),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text(
+                'Checkout',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 31, 31, 31),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: disableButtons ? null : handleAddToCart,
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                side: BorderSide(color: Colors.blue, width: 2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text(
+                'Add to Cart',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: handlePreOrder,
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                backgroundColor: Color(0xFF4CAF50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text(
+                'Pre-order',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSizeSelector() {
-    return availableSizes.isEmpty
-        ? const Text(
-      'This item does not have sizes available',
-      style: TextStyle(color: Colors.grey, fontSize: 16),
-    )
-        : DropdownButton<String>(
-      value: _selectedSize.isEmpty ? null : _selectedSize,
-      hint: const Text('Select Size'),
-      items: availableSizes.map((size) {
-        return DropdownMenuItem(
-          value: size,
-          child: Text('$size'),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedSize = value ?? '';
-          _displayPrice = sizePrices[_selectedSize] ?? widget.price;
-          _availableQuantity = sizeQuantities[_selectedSize] ?? 0;
-        });
-      },
+    return AbsorbPointer(
+      absorbing: availableSizes.isEmpty, // Disable interactions when empty
+      child: DropdownButton<String>(
+        value: _selectedSize.isEmpty ? null : _selectedSize,
+        hint: const Text('Select Size'),
+        items: availableSizes.map((size) {
+          // Fetch the available quantity for the size
+          int availableQuantity = sizeQuantities[size] ?? 0;
+          return DropdownMenuItem(
+            value: size,
+            child: Text(
+                '$size (${availableQuantity} available)'), // Display size with available quantity
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _selectedSize = value ?? '';
+            _currentQuantity = 1; // Reset quantity to 1 for new size selection
+          });
+        },
+        disabledHint: const Text(
+          'No Sizes Available',
+          style: TextStyle(color: Colors.grey),
+        ),
+      ),
     );
   }
 
@@ -363,10 +446,10 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
         IconButton(
           onPressed: _currentQuantity > 1
               ? () {
-            setState(() {
-              _currentQuantity--;
-            });
-          }
+                  setState(() {
+                    _currentQuantity--;
+                  });
+                }
               : null,
           icon: const Icon(Icons.remove),
         ),
@@ -374,10 +457,10 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
         IconButton(
           onPressed: _currentQuantity < _availableQuantity
               ? () {
-            setState(() {
-              _currentQuantity++;
-            });
-          }
+                  setState(() {
+                    _currentQuantity++;
+                  });
+                }
               : null,
           icon: const Icon(Icons.add),
         ),

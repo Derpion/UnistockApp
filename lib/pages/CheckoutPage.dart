@@ -53,14 +53,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 child: SingleChildScrollView(
                   child: Text(
                     '1. Acceptance of Terms: By accessing or using this service, you agree to be bound by these terms and conditions. If you do not agree with any part of these terms, you may not use the service.\n\n'
-                        '2. Use of Service: The service provided is for personal and non-commercial use only.\n\n'
-                        '3. User Responsibilities: You are responsible for maintaining the confidentiality of any account information and passwords used for this service. You agree to accept responsibility for all activities that occur under your account or password.\n\n'
-                        '4. Privacy: Your use of the service is subject to our Privacy Policy, which governs the collection, use, and disclosure of your information. By using the service, you consent to the practices described in the Privacy Policy.\n\n'
-                        '5. Limitation of Liability: In no event shall we be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the service, whether based on warranty, contract, tort (including negligence), or any other legal theory.\n\n'
-                        '6. Indemnification: You agree to indemnify and hold harmless the service provider, its affiliates, officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses, including without limitation reasonable legal and accounting fees, arising out of or in any way connected with your access to or use of the service or your violation of these terms.\n\n'
-                        '7. Modification of Terms: We reserve the right to modify or revise these terms and conditions at any time without prior notice. By continuing to use the service after such modifications, you agree to be bound by the revised terms.\n\n'
-                        '8. Governing Law: These terms and conditions shall be governed by and construed in accordance with the laws of [Jurisdiction], without regard to its conflict of law provisions.\n\n'
-                        '9. Contact: If you have any questions or concerns about these terms and conditions, please contact us at [Contact Information].',
+                    '2. Use of Service: The service provided is for personal and non-commercial use only.\n\n'
+                    '3. User Responsibilities: You are responsible for maintaining the confidentiality of any account information and passwords used for this service. You agree to accept responsibility for all activities that occur under your account or password.\n\n'
+                    '4. Privacy: Your use of the service is subject to our Privacy Policy, which governs the collection, use, and disclosure of your information. By using the service, you consent to the practices described in the Privacy Policy.\n\n'
+                    '5. Limitation of Liability: In no event shall we be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the service, whether based on warranty, contract, tort (including negligence), or any other legal theory.\n\n'
+                    '6. Indemnification: You agree to indemnify and hold harmless the service provider, its affiliates, officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses, including without limitation reasonable legal and accounting fees, arising out of or in any way connected with your access to or use of the service or your violation of these terms.\n\n'
+                    '7. Modification of Terms: We reserve the right to modify or revise these terms and conditions at any time without prior notice. By continuing to use the service after such modifications, you agree to be bound by the revised terms.\n\n'
+                    '8. Governing Law: These terms and conditions shall be governed by and construed in accordance with the laws of [Jurisdiction], without regard to its conflict of law provisions.\n\n'
+                    '9. Contact: If you have any questions or concerns about these terms and conditions, please contact us at [Contact Information].',
                     style: TextStyle(fontSize: 14),
                   ),
                 ),
@@ -73,108 +73,114 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   },
                 ),
                 TextButton(
-                  child: isOrderProcessing ? CircularProgressIndicator() : Text('Accept'),
+                  child: isOrderProcessing
+                      ? CircularProgressIndicator()
+                      : Text('Accept'),
                   onPressed: isOrderProcessing
                       ? null
                       : () async {
-                    setState(() {
-                      isOrderProcessing = true;
-                    });
+                          setState(() {
+                            isOrderProcessing = true;
+                          });
 
-                    try {
-                      final int totalPrice = widget.price * widget.quantity;
+                          try {
+                            final int totalPrice =
+                                widget.price * widget.quantity;
 
-                      print("Placing Order - Item: ${widget.label}, Price: ${widget.price}, Quantity: ${widget.quantity}, Total: $totalPrice");
-                      DocumentReference orderDocRef = await FirebaseFirestore
-                          .instance
-                          .collection('users')
-                          .doc(widget.currentProfileInfo.userId)
-                          .collection('orders')
-                          .add({
-                        'orderDate': FieldValue.serverTimestamp(),
-                        'items': [
-                          {
-                            'category': widget.category,
-                            'courseLabel': widget.courseLabel ?? 'N/A',
-                            'imagePath': widget.imagePath,
-                            'itemSize': widget.itemSize ?? 'N/A',
-                            'label': widget.label,
-                            'price': widget.price,
-                            'quantity': widget.quantity,
+                            print(
+                                "Placing Order - Item: ${widget.label}, Price: ${widget.price}, Quantity: ${widget.quantity}, Total: $totalPrice");
+                            DocumentReference orderDocRef =
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(widget.currentProfileInfo.userId)
+                                    .collection('orders')
+                                    .add({
+                              'orderDate': FieldValue.serverTimestamp(),
+                              'items': [
+                                {
+                                  'category': widget.category,
+                                  'courseLabel': widget.courseLabel ?? 'N/A',
+                                  'imagePath': widget.imagePath,
+                                  'itemSize': widget.itemSize ?? 'N/A',
+                                  'label': widget.label,
+                                  'price': widget.price,
+                                  'quantity': widget.quantity,
+                                }
+                              ],
+                              'status':
+                                  'pending', // Added status here at the top level
+                            });
+
+                            print(
+                                "Order placed successfully with ID: ${orderDocRef.id}");
+
+                            // // Add in-app notification in Firestore under 'notifications'
+                            // await FirebaseFirestore.instance
+                            //     .collection('users')
+                            //     .doc(widget.currentProfileInfo.userId)
+                            //     .collection('notifications')
+                            //     .add({
+                            //   'title': 'Order Placed',
+                            //   'message': 'Your order for ${widget.label} has been successfully placed!',
+                            //   'orderSummary': {
+                            //     'label': widget.label,
+                            //     'itemSize': widget.itemSize,
+                            //     'quantity': widget.quantity,
+                            //     'pricePerPiece': widget.unitPrice,
+                            //     'totalPrice': totalPrice,
+                            //   },
+                            //   'timestamp': FieldValue.serverTimestamp(),
+                            //   'status': 'unread',
+                            // });
+                            //
+                            // print("In-app notification added to Firestore.");
+                            //
+                            // // Local notification for the device
+                            // try {
+                            //   await notificationService.showNotification(
+                            //     widget.currentProfileInfo.userId,
+                            //     0,
+                            //     'Order Placed',
+                            //     'Your order for ${widget.label} has been successfully placed!',
+                            //     orderDocRef.id,
+                            //   );
+                            //   print("Device notification sent successfully.");
+                            // } catch (notificationError) {
+                            //   print("Error sending device notification: $notificationError");
+                            // }
+
+                            await _notifyAdmin(
+                              widget.currentProfileInfo.name,
+                              widget.currentProfileInfo.userId,
+                              widget.label,
+                              widget.itemSize,
+                              widget.quantity,
+                              widget.price,
+                            );
+
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PurchaseSummaryPage(
+                                  label: widget.label,
+                                  itemSize: widget.itemSize,
+                                  imagePath: widget.imagePath,
+                                  price: widget.price,
+                                  quantity: widget.quantity,
+                                  category: widget.category,
+                                  currentProfileInfo: widget.currentProfileInfo,
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            print("Error placing order: $e");
+                          } finally {
+                            setState(() {
+                              isOrderProcessing = false;
+                            });
                           }
-                        ],
-                        'status': 'pending', // Added status here at the top level
-                      });
-
-                      print("Order placed successfully with ID: ${orderDocRef.id}");
-
-                      // // Add in-app notification in Firestore under 'notifications'
-                      // await FirebaseFirestore.instance
-                      //     .collection('users')
-                      //     .doc(widget.currentProfileInfo.userId)
-                      //     .collection('notifications')
-                      //     .add({
-                      //   'title': 'Order Placed',
-                      //   'message': 'Your order for ${widget.label} has been successfully placed!',
-                      //   'orderSummary': {
-                      //     'label': widget.label,
-                      //     'itemSize': widget.itemSize,
-                      //     'quantity': widget.quantity,
-                      //     'pricePerPiece': widget.unitPrice,
-                      //     'totalPrice': totalPrice,
-                      //   },
-                      //   'timestamp': FieldValue.serverTimestamp(),
-                      //   'status': 'unread',
-                      // });
-                      //
-                      // print("In-app notification added to Firestore.");
-                      //
-                      // // Local notification for the device
-                      // try {
-                      //   await notificationService.showNotification(
-                      //     widget.currentProfileInfo.userId,
-                      //     0,
-                      //     'Order Placed',
-                      //     'Your order for ${widget.label} has been successfully placed!',
-                      //     orderDocRef.id,
-                      //   );
-                      //   print("Device notification sent successfully.");
-                      // } catch (notificationError) {
-                      //   print("Error sending device notification: $notificationError");
-                      // }
-
-                      await _notifyAdmin(
-                        widget.currentProfileInfo.name,
-                        widget.currentProfileInfo.userId,
-                        widget.label,
-                        widget.itemSize,
-                        widget.quantity,
-                        widget.price,
-                      );
-
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PurchaseSummaryPage(
-                            label: widget.label,
-                            itemSize: widget.itemSize,
-                            imagePath: widget.imagePath,
-                            price: widget.price,
-                            quantity: widget.quantity,
-                            category: widget.category,
-                            currentProfileInfo: widget.currentProfileInfo,
-                          ),
-                        ),
-                      );
-                    } catch (e) {
-                      print("Error placing order: $e");
-                    } finally {
-                      setState(() {
-                        isOrderProcessing = false;
-                      });
-                    }
-                  },
+                        },
                 ),
               ],
             );
@@ -184,15 +190,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  Future<void> _notifyAdmin(String userName,
-      String userId,
-      String label,
-      String? itemSize,
-      int quantity,
-      int pricePerPiece) async {
+  Future<void> _notifyAdmin(String userName, String userId, String label,
+      String? itemSize, int quantity, int pricePerPiece) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference adminNotifications = firestore.collection(
-        'admin_notifications');
+    CollectionReference adminNotifications =
+        firestore.collection('admin_notifications');
 
     int totalPrice = pricePerPiece * quantity;
 
@@ -223,7 +225,6 @@ Total Order Price: ₱${totalPrice.toStringAsFixed(2)}
       print("Failed to notify admin: $e");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +287,7 @@ Total Order Price: ₱${totalPrice.toStringAsFixed(2)}
                         child: CircularProgressIndicator(
                           value: loadingProgress.expectedTotalBytes != null
                               ? loadingProgress.cumulativeBytesLoaded /
-                              (loadingProgress.expectedTotalBytes ?? 1)
+                                  (loadingProgress.expectedTotalBytes ?? 1)
                               : null,
                         ),
                       );
@@ -354,7 +355,7 @@ Total Order Price: ₱${totalPrice.toStringAsFixed(2)}
   }
 }
 
-  class PurchaseSummaryPage extends StatelessWidget {
+class PurchaseSummaryPage extends StatelessWidget {
   final String label;
   final String? itemSize;
   final String imagePath;
@@ -435,8 +436,8 @@ Total Order Price: ₱${totalPrice.toStringAsFixed(2)}
                     image: DecorationImage(
                       image: imagePath.isNotEmpty
                           ? NetworkImage(imagePath)
-                          : AssetImage(
-                          'assets/icons/default_icon.png') as ImageProvider,
+                          : AssetImage('assets/icons/default_icon.png')
+                              as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -491,50 +492,48 @@ Total Order Price: ₱${totalPrice.toStringAsFixed(2)}
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        HomePage(
-                          profileInfo: currentProfileInfo,
-                          navigationItems: [
-                            {
-                              'icon': Icons.inventory,
-                              'label': 'Uniform',
-                              'onPressed': () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => UniformPage(
-                                          currentProfileInfo: currentProfileInfo)),
-                                );
-                              }
-                            },
-                            {
-                              'icon': Icons.shopping_bag,
-                              'label': 'Merch/Accessories',
-                              'onPressed': () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          MerchAccessoriesPage(
-                                              currentProfileInfo: currentProfileInfo)),
-                                );
-                              }
-                            },
-                            {
-                              'icon': Icons.account_circle,
-                              'label': 'Profile',
-                              'onPressed': () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProfilePage(
-                                        profileInfo: currentProfileInfo),
-                                  ),
-                                );
-                              }
-                            },
-                          ],
-                        ),
+                    builder: (context) => HomePage(
+                      profileInfo: currentProfileInfo,
+                      navigationItems: [
+                        {
+                          'icon': Icons.inventory,
+                          'label': 'Uniform',
+                          'onPressed': () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => UniformPage(
+                                      currentProfileInfo: currentProfileInfo)),
+                            );
+                          }
+                        },
+                        {
+                          'icon': Icons.shopping_bag,
+                          'label': 'Merch/Accessories',
+                          'onPressed': () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MerchAccessoriesPage(
+                                      currentProfileInfo: currentProfileInfo)),
+                            );
+                          }
+                        },
+                        {
+                          'icon': Icons.account_circle,
+                          'label': 'Profile',
+                          'onPressed': () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProfilePage(
+                                    profileInfo: currentProfileInfo),
+                              ),
+                            );
+                          }
+                        },
+                      ],
+                    ),
                   ),
                 );
               },

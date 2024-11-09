@@ -39,7 +39,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
             final String title = data['title'] ?? 'No Title';
             final String message = data['message'] ?? 'No Message';
             final String timestamp = data['timestamp'] != null
-                ? DateFormat.yMMMd().add_jm().format((data['timestamp'] as Timestamp).toDate())
+                ? DateFormat.yMMMd()
+                    .add_jm()
+                    .format((data['timestamp'] as Timestamp).toDate())
                 : 'No Timestamp';
 
             final String notificationBody = "$message\n$title as of $timestamp";
@@ -165,11 +167,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
       children: [
         Text(
           data['timestamp'] != null
-              ? DateFormat.yMMMd().add_jm().format((data['timestamp'] as Timestamp).toDate())
+              ? DateFormat.yMMMd()
+                  .add_jm()
+                  .format((data['timestamp'] as Timestamp).toDate())
               : 'No Timestamp',
           style: TextStyle(fontSize: 12, color: Colors.grey),
         ),
-        if (data.containsKey('orderSummary') && data['orderSummary'] != null) // Ensure orderSummary exists
+        if (data['title'] == 'Pre-order Approved' ||
+            data['title'] == 'Reservation Approved')
           TextButton(
             onPressed: () {
               Navigator.pushNamed(
@@ -187,7 +192,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  void _showOrderSummaryDialog(BuildContext context, Map<String, dynamic> data) {
+  void _showOrderSummaryDialog(
+      BuildContext context, Map<String, dynamic> data) {
     final orderSummary = data['orderSummary'];
 
     if (orderSummary is! List) {
@@ -195,9 +201,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
       return;
     }
 
-    final List<Map<String, dynamic>> orderItems = List<Map<String, dynamic>>.from(orderSummary);
+    final List<Map<String, dynamic>> orderItems =
+        List<Map<String, dynamic>>.from(orderSummary);
     final timestamp = data['timestamp'] != null
-        ? DateFormat.yMMMd().add_jm().format((data['timestamp'] as Timestamp).toDate())
+        ? DateFormat.yMMMd()
+            .add_jm()
+            .format((data['timestamp'] as Timestamp).toDate())
         : 'No Timestamp';
 
     showDialog(
@@ -293,9 +302,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 ),
               ),
               SizedBox(height: 4),
-              Text("Size: ${item['itemSize'] ?? 'N/A'}", style: TextStyle(fontSize: 14)),
+              Text("Size: ${item['itemSize'] ?? 'N/A'}",
+                  style: TextStyle(fontSize: 14)),
               SizedBox(height: 4),
-              Text("Quantity: ${item['quantity'] ?? 'N/A'}", style: TextStyle(fontSize: 14)),
+              Text("Quantity: ${item['quantity'] ?? 'N/A'}",
+                  style: TextStyle(fontSize: 14)),
             ],
           ),
         );
@@ -303,7 +314,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  Widget _buildDialogFooter(List<Map<String, dynamic>> orderSummary, String timestamp) {
+  Widget _buildDialogFooter(
+      List<Map<String, dynamic>> orderSummary, String timestamp) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -13,6 +13,7 @@ class MerchAccessoriesPage extends StatefulWidget {
   _MerchAccessoriesPageState createState() => _MerchAccessoriesPageState();
 }
 
+
 class _MerchAccessoriesPageState extends State<MerchAccessoriesPage> {
   final List<String> itemsWithoutSizes = [
     'water bottle',

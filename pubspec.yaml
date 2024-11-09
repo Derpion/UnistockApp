@@ -21,6 +21,8 @@ dependencies:
   intl: ^0.19.0
   path: ^1.8.0
   cupertino_icons: ^1.0.6
+  photo_view: ^0.15.0
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
@@ -78,3 +80,10 @@ flutter:
     - assets/images/IT_BLAZER.png
     - assets/images/IT_PANTS.png
     - assets/images/IT_POLO.png
+    - assets/images/bacomm2.png
+    - assets/images/SHS.png
+    - assets/images/IT&CPE.png
+    - assets/images/bsa and bsba2.png
+    - assets/images/hrm and culinary2.png
+    - assets/images/Uni-icon.png
+    - assets/images/profilepictdefault.png

@@ -6,7 +6,8 @@ import 'package:UNISTOCK/ProfileInfo.dart'; // Import ProfileInfo class
 class CollegeUniformsPage extends StatelessWidget {
   final ProfileInfo currentProfileInfo;
 
-  CollegeUniformsPage({required this.currentProfileInfo}); // Add the constructor
+  CollegeUniformsPage(
+      {required this.currentProfileInfo}); // Add the constructor
 
   @override
   Widget build(BuildContext context) {
@@ -65,19 +66,19 @@ class CollegeUniformsPage extends StatelessWidget {
               ),
               buildImageOption(
                 context,
-                'assets/images/bsa and bsba.png',
+                'assets/images/bsa and bsba2.png',
                 'BSA & BSBA',
                 'BSA & BSBA',
               ),
               buildImageOption(
                 context,
-                'assets/images/hrm and culinary.png',
+                'assets/images/hrm and culinary2.png',
                 'HRM & CULINARY',
                 'HRM & Culinary',
               ),
               buildImageOption(
                 context,
-                'assets/images/bacomm.png',
+                'assets/images/bacomm2.png',
                 'BACOMM',
                 'BACOMM',
               ),
@@ -103,7 +104,8 @@ class CollegeUniformsPage extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => CollegeUniSelectionPage(
               courseLabel: courseLabel,
-              currentProfileInfo: currentProfileInfo, // Pass the profile info here
+              currentProfileInfo:
+                  currentProfileInfo, // Pass the profile info here
             ),
           ),
         );

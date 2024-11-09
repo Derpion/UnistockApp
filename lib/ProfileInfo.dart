@@ -4,7 +4,7 @@ class ProfileInfo {
   final String studentId;
   final String contactNumber;
   final String email;
-  final String address;
+
 
   ProfileInfo({
     required this.userId,
@@ -12,7 +12,7 @@ class ProfileInfo {
     required this.studentId,
     required this.contactNumber,
     required this.email,
-    required this.address,
+
   });
 
   Map<String, dynamic> toJson() {
@@ -22,7 +22,7 @@ class ProfileInfo {
       'studentId': studentId,
       'contactNumber': contactNumber,
       'email': email,
-      'address': address,
+
     };
   }
 
@@ -33,7 +33,6 @@ class ProfileInfo {
       studentId: doc['studentId'] ?? '',
       contactNumber: doc['contactNumber'] ?? '',
       email: doc['email'] ?? '',
-      address: doc['address'] ?? '',
     );
   }
 }

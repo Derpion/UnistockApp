@@ -78,7 +78,10 @@ class _CartPageState extends State<CartPage> {
           selected: existingItem.selected,
           category: existingItem.category,
           courseLabel: existingItem.courseLabel,
-          documentReferences: [...existingItem.documentReferences, doc.reference],
+          documentReferences: [
+            ...existingItem.documentReferences,
+            doc.reference
+          ],
         );
       } else {
         groupedItems[uniqueKey] = CartItem(
@@ -113,12 +116,18 @@ class _CartPageState extends State<CartPage> {
 
     if (user != null) {
       // Fetch user's profile information, including their name
-      DocumentSnapshot userDoc = await firestore.collection('users').doc(user.uid).get();
+      DocumentSnapshot userDoc =
+          await firestore.collection('users').doc(user.uid).get();
       String userName = userDoc['name'] ?? 'Unknown User';
 
-      final cartCollection = firestore.collection('users').doc(user.uid).collection('cart');
-      final ordersCollection = firestore.collection('users').doc(user.uid).collection('orders');
-      final notificationsCollection = firestore.collection('users').doc(user.uid).collection('notifications');
+      final cartCollection =
+          firestore.collection('users').doc(user.uid).collection('cart');
+      final ordersCollection =
+          firestore.collection('users').doc(user.uid).collection('orders');
+      final notificationsCollection = firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('notifications');
       final WriteBatch batch = firestore.batch();
 
       List<Map<String, dynamic>> orderItems = [];
@@ -154,22 +163,23 @@ class _CartPageState extends State<CartPage> {
           print("Checked out items successfully and removed from cart.");
 
           // // Send local notification for successful checkout
-          // await notificationService.showNotification(
-          //   user.uid,
-          //   orderDocRef.id.hashCode,
-          //   'Order Placed',
-          //   'Your order with Receipt ID ${orderDocRef.id} has been successfully processed.',
-          //   orderDocRef.id,
-          // );
-          //
+          await notificationService.showNotification(
+            user.uid,
+            orderDocRef.id.hashCode,
+            'Order Placed',
+            'Your order with Receipt ID ${orderDocRef.id} has been successfully processed.',
+            orderDocRef.id,
+          );
+
           // // Add in-app notification for successful checkout
-          // await notificationsCollection.add({
-          //   'title': 'Order Placed',
-          //   'message': 'Your order with Receipt ID ${orderDocRef.id} has been successfully placed!',
-          //   'orderSummary': orderItems,
-          //   'timestamp': FieldValue.serverTimestamp(),
-          //   'status': 'unread',
-          // });
+          await notificationsCollection.add({
+            'title': 'Order Placed',
+            'message':
+                'Your order with Receipt ID ${orderDocRef.id} has been successfully placed!',
+            'orderSummary': orderItems,
+            'timestamp': FieldValue.serverTimestamp(),
+            'status': 'unread',
+          });
 
           // Notify admin about the new order with user details
           await _notifyAdmin(
@@ -178,7 +188,6 @@ class _CartPageState extends State<CartPage> {
             userName: userName,
             items: orderItems,
           );
-
         } catch (e) {
           print("Failed to complete batch operation: $e");
         }
@@ -197,7 +206,8 @@ class _CartPageState extends State<CartPage> {
     required List<Map<String, dynamic>> items,
   }) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference adminNotifications = firestore.collection('admin_notifications');
+    CollectionReference adminNotifications =
+        firestore.collection('admin_notifications');
 
     // Calculate total order price and prepare item details
     StringBuffer itemDetailsBuffer = StringBuffer();
@@ -256,7 +266,8 @@ Total Order Price: ₱${totalOrderPrice.toStringAsFixed(2)}
       final firstDoc = cartDocs.docs.first;
       final int unitPrice = firstDoc['price'] ~/ firstDoc['quantity'];
 
-      int totalQuantity = cartDocs.docs.fold(0, (sum, doc) => sum + (doc['quantity'] as int));
+      int totalQuantity =
+          cartDocs.docs.fold(0, (sum, doc) => sum + (doc['quantity'] as int));
       totalQuantity += change;
 
       if (totalQuantity > 0) {
@@ -318,7 +329,8 @@ Total Order Price: ₱${totalOrderPrice.toStringAsFixed(2)}
     }
   }
 
-  Future<void> updateCartItemSelection(List<DocumentReference> docRefs, bool? selected) async {
+  Future<void> updateCartItemSelection(
+      List<DocumentReference> docRefs, bool? selected) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     final WriteBatch batch = firestore.batch();
 
@@ -369,14 +381,14 @@ Total Order Price: ₱${totalOrderPrice.toStringAsFixed(2)}
             child: SingleChildScrollView(
               child: Text(
                 '1. Acceptance of Terms: By accessing or using this service, you agree to be bound by these terms and conditions. If you do not agree with any part of these terms, you may not use the service.\n\n'
-                    '2. Use of Service: The service provided is for personal and non-commercial use only...\n\n'
-                    '3. User Responsibilities: You are responsible for maintaining the confidentiality of any account information and passwords used for this service. You agree to accept responsibility for all activities that occur under your account or password.\n\n'
-                    '4. Privacy: Your use of the service is subject to our Privacy Policy, which governs the collection, use, and disclosure of your information. By using the service, you consent to the practices described in the Privacy Policy.\n\n'
-                    '5. Limitation of Liability: In no event shall we be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the service, whether based on warranty, contract, tort (including negligence), or any other legal theory.\n\n'
-                    '6. Indemnification: You agree to indemnify and hold harmless the service provider, its affiliates, officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses, including without limitation reasonable legal and accounting fees, arising out of or in any way connected with your access to or use of the service or your violation of these terms.\n\n'
-                    '7. Modification of Terms: We reserve the right to modify or revise these terms and conditions at any time without prior notice. By continuing to use the service after such modifications, you agree to be bound by the revised terms.\n\n'
-                    '8. Governing Law: These terms and conditions shall be governed by and construed in accordance with the laws of [Jurisdiction], without regard to its conflict of law provisions.\n\n'
-                    '9. Contact: If you have any questions or concerns about these terms and conditions, please contact us at [Contact Information].',
+                '2. Use of Service: The service provided is for personal and non-commercial use only...\n\n'
+                '3. User Responsibilities: You are responsible for maintaining the confidentiality of any account information and passwords used for this service. You agree to accept responsibility for all activities that occur under your account or password.\n\n'
+                '4. Privacy: Your use of the service is subject to our Privacy Policy, which governs the collection, use, and disclosure of your information. By using the service, you consent to the practices described in the Privacy Policy.\n\n'
+                '5. Limitation of Liability: In no event shall we be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the service, whether based on warranty, contract, tort (including negligence), or any other legal theory.\n\n'
+                '6. Indemnification: You agree to indemnify and hold harmless the service provider, its affiliates, officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses, including without limitation reasonable legal and accounting fees, arising out of or in any way connected with your access to or use of the service or your violation of these terms.\n\n'
+                '7. Modification of Terms: We reserve the right to modify or revise these terms and conditions at any time without prior notice. By continuing to use the service after such modifications, you agree to be bound by the revised terms.\n\n'
+                '8. Governing Law: These terms and conditions shall be governed by and construed in accordance with the laws of [Jurisdiction], without regard to its conflict of law provisions.\n\n'
+                '9. Contact: If you have any questions or concerns about these terms and conditions, please contact us at [Contact Information].',
                 style: TextStyle(fontSize: 14),
               ),
             ),
@@ -435,6 +447,7 @@ Total Order Price: ₱${totalOrderPrice.toStringAsFixed(2)}
                     Checkbox(
                       value: selectAll,
                       onChanged: handleSelectAllChanged,
+                      activeColor: Colors.blue,
                     ),
                     Text(
                       'Select All',
@@ -497,6 +510,7 @@ Total Order Price: ₱${totalOrderPrice.toStringAsFixed(2)}
                 onChanged: (bool? value) {
                   handleCheckboxChanged(value, item);
                 },
+                activeColor: Colors.blue,
               ),
             ),
             SizedBox(
@@ -544,9 +558,9 @@ Total Order Price: ₱${totalOrderPrice.toStringAsFixed(2)}
                             icon: Icon(Icons.remove, size: isMobile ? 16 : 24),
                             onPressed: item.quantity > 1
                                 ? () {
-                              handleQuantityChanged(
-                                  item.label, item.selectedSize, -1);
-                            }
+                                    handleQuantityChanged(
+                                        item.label, item.selectedSize, -1);
+                                  }
                                 : null,
                           ),
                           Text(

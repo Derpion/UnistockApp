@@ -37,59 +37,78 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
     _fetchSizesFromFirestore();
   }
 
-  Future<void> _fetchSizesFromFirestore() async {
-    try {
-      print('Attempting to fetch document for label: ${widget.label}');
+Future<void> _fetchSizesFromFirestore() async {
+  try {
+    print('Attempting to fetch document for label: ${widget.label}');
 
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('Inventory_stock')
-          .doc('senior_high_items')
-          .collection('Items')
-          .where('label', isEqualTo: widget.label)
-          .get();
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('Inventory_stock')
+        .doc('senior_high_items')
+        .collection('Items')
+        .where('label', isEqualTo: widget.label)
+        .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        var doc = querySnapshot.docs.first;
-        var data = doc.data() as Map<String, dynamic>;
+    if (querySnapshot.docs.isNotEmpty) {
+      var doc = querySnapshot.docs.first;
+      var data = doc.data() as Map<String, dynamic>;
 
-        if (data.containsKey('sizes') && data['sizes'] != null) {
-          Map<String, dynamic> sizesMap = data['sizes'] as Map<String, dynamic>;
+      if (data.containsKey('sizes') && data['sizes'] != null) {
+        Map<String, dynamic> sizesMap = data['sizes'] as Map<String, dynamic>;
 
-          print('Fetched sizes from Firestore: $sizesMap');
+        print('Fetched sizes from Firestore: $sizesMap');
 
-          setState(() {
-            availableSizes = sizesMap.keys.toList();
-            sizeQuantities = sizesMap.map(
-                (size, details) => MapEntry(size, details['quantity'] ?? 0));
-            sizePrices = sizesMap.map((size, details) => MapEntry(size,
-                details['price'] != null ? details['price'] as int : null));
+        setState(() {
+          availableSizes = sizesMap.keys.toList();
+          sizeQuantities = sizesMap.map(
+              (size, details) => MapEntry(size, details['quantity'] ?? 0));
+          sizePrices = sizesMap.map((size, details) => MapEntry(size,
+              details['price'] != null ? details['price'] as int : null));
 
-            availableSizes = availableSizes
-                .where((size) => sizeQuantities[size]! > 0)
-                .toList();
+          // Define custom size order
+          List<String> sizeOrder = [
+            'XS',
+            'Small',
+            'Medium',
+            'Large',
+            'XL',
+            '2XL',
+            '3XL',
+            '4XL',
+            '5XL',
+            '6XL',
+            '7XL'
+          ];
 
-            print('Available sizes after filtering: $availableSizes');
+          // Sort sizes based on the custom order
+          availableSizes.sort((a, b) {
+            int indexA = sizeOrder.indexOf(a);
+            int indexB = sizeOrder.indexOf(b);
+            return indexA.compareTo(indexB);
           });
-        } else {
-          print('Sizes are not specified or available.');
-          setState(() {
-            availableSizes = [];
-            sizeQuantities = {};
-            sizePrices = {};
-          });
-        }
+
+          print(
+              'Available sizes after filtering and sorting: $availableSizes');
+        });
       } else {
-        print('No document found with label: ${widget.label}');
+        print('Sizes are not specified or available.');
+        setState(() {
+          availableSizes = [];
+          sizeQuantities = {};
+          sizePrices = {};
+        });
       }
-    } catch (e) {
-      print('Error fetching sizes: $e');
-      setState(() {
-        availableSizes = [];
-        sizeQuantities = {};
-        sizePrices = {};
-      });
+    } else {
+      print('No document found with label: ${widget.label}');
     }
+  } catch (e) {
+    print('Error fetching sizes: $e');
+    setState(() {
+      availableSizes = [];
+      sizeQuantities = {};
+      sizePrices = {};
+    });
   }
+}
 
   bool get disableButtons {
     if (availableSizes.isEmpty) {
@@ -106,6 +125,30 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
     }
 
     return false;
+  }
+
+    bool get disablePreOrder {
+  if (_selectedSize.isEmpty || sizeQuantities[_selectedSize] == null) {
+    return true; // Disable if no size is selected or size data is unavailable.
+  }
+
+  if (sizeQuantities[_selectedSize]! > 0) {
+    return true; // Disable if stock is available for the selected size.
+  }
+
+  return false; // Enable pre-order only when stock is zero.
+  }
+
+  bool get shouldShowMessage {
+  if (_selectedSize.isEmpty) {
+    return true; // Show message if no size is selected.
+  }
+
+  if (sizeQuantities[_selectedSize] == null || sizeQuantities[_selectedSize]! <= 0) {
+    return false; // Don't show the message for valid pre-order items (out of stock but size selected).
+  }
+
+  return false; // Hide message if stock is available for the selected size.
   }
 
   void handleCheckout() {
@@ -229,75 +272,76 @@ class _DetailSelectionSHSState extends State<DetailSelectionSHS> {
     );
   }
 
-@override
-Widget build(BuildContext context) {
-  final int? sizePrice = sizePrices[_selectedSize];
-  final int displayPrice = sizePrice ?? widget.price;
+  @override
+  Widget build(BuildContext context) {
+    final int? sizePrice = sizePrices[_selectedSize];
+    final int displayPrice = sizePrice ?? widget.price;
 
-  return Scaffold(
-    appBar: AppBar(
-      title: Text(widget.label),
-    ),
-    body: Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GestureDetector(
-                    onTap: viewImage,
-                    child: Image.network(
-                      widget.imagePath,
-                      height: 300,
-                      fit: BoxFit.cover,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.label),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    GestureDetector(
+                      onTap: viewImage,
+                      child: Image.network(
+                        widget.imagePath,
+                        height: 300,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    widget.label,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  if (availableSizes.isNotEmpty) ...[
+                    SizedBox(height: 16),
+                    Text(
+                      widget.label,
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    if (availableSizes.isNotEmpty) ...[
+                      SizedBox(height: 10),
+                      _buildSizeSelector(),
+                    ],
                     SizedBox(height: 10),
-                    _buildSizeSelector(),
+                    Text(
+                      'Price: ₱$displayPrice',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    _buildQuantitySelector(),
                   ],
-                  SizedBox(height: 10),
-                  Text(
-                    'Price: ₱$displayPrice',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  _buildQuantitySelector(),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildButtonsRow(),
-              //show out of stock message only when no stocks available for the selected size
-              if (sizeQuantities[_selectedSize] == 0 || _selectedSize.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: Text(
-                    'This item is either out of stock or requires a size selection.',
-                    style: TextStyle(color: Colors.red, fontSize: 14),
-                    textAlign: TextAlign.center,
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildButtonsRow(),
+                //show out of stock message only when no stocks available for the selected size
+                if (shouldShowMessage)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Text(
+                      'This item is either out of stock or requires a size selection.',
+                      style: TextStyle(color: Colors.red, fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
 Widget _buildButtonsRow() {
   return Center(
@@ -330,17 +374,17 @@ Widget _buildButtonsRow() {
             onPressed: disableButtons ? null : handleAddToCart,
             style: OutlinedButton.styleFrom(
               padding: EdgeInsets.symmetric(vertical: 15),
-              side: BorderSide(color: Colors.blue, width: 2),
+              side: BorderSide(color: disableButtons ? Colors.grey : Colors.blue, width: 2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Add to Cart',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue,
+                color: disableButtons ? Color.fromARGB(255, 31, 31, 31) : Colors.blue,
               ),
             ),
           ),
@@ -348,10 +392,10 @@ Widget _buildButtonsRow() {
         const SizedBox(width: 10),
         Expanded(
           child: ElevatedButton(
-            onPressed: handlePreOrder,
+            onPressed: disablePreOrder ? null : handlePreOrder,
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(vertical: 15),
-              backgroundColor: Color(0xFF4CAF50),
+              backgroundColor: disablePreOrder ? Colors.grey : Color(0xFF4CAF50),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -371,34 +415,40 @@ Widget _buildButtonsRow() {
   );
 }
 
-  Widget _buildSizeSelector() {
-    return AbsorbPointer(
-      absorbing: availableSizes.isEmpty, // Disable interactions when empty
-      child: DropdownButton<String>(
-        value: _selectedSize.isEmpty ? null : _selectedSize,
-        hint: Text('Select Size'),
-        items: availableSizes.map((size) {
-          // Fetch the available quantity for the size
-          int availableQuantity = sizeQuantities[size] ?? 0;
-          return DropdownMenuItem(
-            value: size,
-            child: Text(
-                '$size (${availableQuantity} available)'), // Display size with available quantity
-          );
-        }).toList(),
-        onChanged: (value) {
-          setState(() {
-            _selectedSize = value ?? '';
-            _currentQuantity = 1; // Reset quantity to 1 for new size selection
-          });
-        },
-        disabledHint: Text(
-          'No Sizes Available',
-          style: TextStyle(color: Colors.grey),
-        ),
+Widget _buildSizeSelector() {
+  return AbsorbPointer(
+    absorbing: availableSizes.isEmpty, // Disable interactions when empty
+    child: DropdownButton<String>(
+      value: _selectedSize.isEmpty ? null : _selectedSize,
+      hint: Text('Select Size'),
+      items: availableSizes.map((size) {
+        int availableQuantity = sizeQuantities[size] ?? 0;
+
+        return DropdownMenuItem(
+          value: size,
+          child: Text(
+            availableQuantity > 0
+                ? '$size ($availableQuantity available)'
+                : '$size (Pre-order)', // Mark out-of-stock items as "Pre-order"
+            style: TextStyle(
+              color: availableQuantity > 0 ? Colors.black : Colors.green,
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedSize = value ?? '';
+          _currentQuantity = 1; // Reset quantity to 1 for new size selection
+        });
+      },
+      disabledHint: Text(
+        'No Sizes Available',
+        style: TextStyle(color: Colors.grey),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildQuantitySelector() {
     return Row(

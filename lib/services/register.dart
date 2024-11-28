@@ -27,7 +27,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final String passwordPattern =
       r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}$';
   final String emailPattern =
-      r'^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|hotmail\.com|outlook\.com|batangas\.sti\.edu\.ph)$';
+      r'^[a-zA-Z0-9._%+-]+@(batangas\.sti\.edu\.ph)$';
 
   @override
   Widget build(BuildContext context) {
@@ -74,31 +74,31 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: Column(
                         children: [
                           const SizedBox(height: 20),
-                          _buildInputField('Name', name, inputFormatters: [
+                          _buildInputField('* Student Name', name, inputFormatters: [
                             FilteringTextInputFormatter.allow(
                                 RegExp(r'^[a-zA-Z ]*$')),
                           ]),
                           const SizedBox(height: 20),
-                          _buildInputField('Email', email),
+                          _buildInputField('* Email', email),
                           const SizedBox(height: 20),
-                          _buildInputField('Student ID', studentId,
+                          _buildInputField('* Student ID', studentId,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
                                 LengthLimitingTextInputFormatter(
                                     11), // Limit to 11 digits
                               ]),
                           const SizedBox(height: 20),
-                          _buildInputField('Contact Number', contactNumber,
+                          _buildInputField('* Contact Number', contactNumber,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
                                 LengthLimitingTextInputFormatter(
                                     11), // Limit to 11 digits
                               ]),
                           const SizedBox(height: 20),
-                          _buildInputField('Password', password,
+                          _buildInputField('* Password', password,
                               isPassword: true),
                           const SizedBox(height: 20),
-                          _buildInputField('Confirm Password', confirmPassword,
+                          _buildInputField('* Confirm Password', confirmPassword,
                               isConfirmPassword: true),
                           const SizedBox(height: 20),
                           _buildRegisterButton(mediaQuery),
@@ -192,95 +192,161 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildRegisterButton(MediaQueryData mediaQuery) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8), // Less rounded corners for button
-      onTap: () async {
-        if (name.text.isEmpty ||
-            email.text.isEmpty ||
-            password.text.isEmpty ||
-            confirmPassword.text.isEmpty ||
-            studentId.text.isEmpty ||
-            contactNumber.text.isEmpty) {
-          _showErrorDialog('Please fill in all fields.');
-        } else if (!RegExp(emailPattern).hasMatch(email.text)) {
-          _showErrorDialog(
-              'Please enter a valid email address (e.g., example@gmail.com)');
-        } else if (!RegExp(passwordPattern).hasMatch(password.text)) {
-          _showErrorDialog(
-              'Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character.');
-        } else if (password.text != confirmPassword.text) {
-          _showErrorDialog('Passwords do not match.');
-        } else if (contactNumber.text.length != 11) {
-          // Check length of contact number
-          _showErrorDialog('Contact number must be exactly 11 digits.');
-        } else {
-          try {
-            UserCredential userCredential =
-                await _auth.createUserWithEmailAndPassword(
-              email: email.text,
-              password: password.text,
-            );
-
-            await userCredential.user!.sendEmailVerification();
-
-            await _firestore
-                .collection('users')
-                .doc(userCredential.user!.uid)
-                .set({
-              'userId': userCredential.user!.uid,
-              'name': name.text,
-              'email': email.text,
-              'studentId': studentId.text,
-              'contactNumber': contactNumber.text,
-              'createdAt': Timestamp.now(),
-            });
-
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Success'),
-                  content: const Text(
-                      'Registration successful! A verification email has been sent.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => LoginScreen()),
-                        );
-                      },
-                      child: const Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          } catch (e) {
-            _showErrorDialog(e.toString());
-          }
-        }
-      },
-      child: Container(
-        height: mediaQuery.size.height * 0.06,
-        width: mediaQuery.size.width * 0.5,
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 15, 5, 93),
-          borderRadius:
-              BorderRadius.circular(8), // Less rounded corners for button
-        ),
-        child: const Center(
-          child: Text(
-            'REGISTER',
-            style: TextStyle(color: Colors.white, fontSize: 18),
-          ),
+Widget _buildRegisterButton(MediaQueryData mediaQuery) {
+  return InkWell(
+    borderRadius: BorderRadius.circular(8), // Less rounded corners for button
+    onTap: () {
+      if (name.text.isEmpty ||
+          email.text.isEmpty ||
+          password.text.isEmpty ||
+          confirmPassword.text.isEmpty ||
+          studentId.text.isEmpty ||
+          contactNumber.text.isEmpty) {
+        _showErrorDialog('Please fill in all fields.');
+      } else if (!RegExp(emailPattern).hasMatch(email.text)) {
+        _showErrorDialog(
+            'Please enter a valid microsoft account (e.g., example.123456@batangas.sti.edu.ph)');
+      } else if (!RegExp(passwordPattern).hasMatch(password.text)) {
+        _showErrorDialog(
+            'Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character.');
+      } else if (password.text != confirmPassword.text) {
+        _showErrorDialog('Passwords do not match.');
+      } else if (contactNumber.text.length != 11) {
+        _showErrorDialog('Contact number must be exactly 11 digits.');
+      } else {
+        // Show Terms and Conditions Dialog
+        showTermsAndConditionsDialog(context);
+      }
+    },
+    child: Container(
+      height: mediaQuery.size.height * 0.06,
+      width: mediaQuery.size.width * 0.5,
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 15, 5, 93),
+        borderRadius: BorderRadius.circular(8), // Less rounded corners for button
+      ),
+      child: const Center(
+        child: Text(
+          'REGISTER',
+          style: TextStyle(color: Colors.white, fontSize: 18),
         ),
       ),
+    ),
+  );
+}
+
+void showTermsAndConditionsDialog(BuildContext parentContext) {
+  bool isChecked = false; // Checkbox state
+
+  showDialog(
+    context: parentContext,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: Text('Terms and Conditions'),
+            content: Container(
+              width: double.maxFinite,
+              height: 300,
+              child: SingleChildScrollView(
+                child: Text(
+                  'PROWARE POLICY\n\n'
+                  '1. Account Creation: You must provide accurate and complete information during the registration process. UniStock will not be liable for errors caused by incorrect user inputs.\n\n'
+                  '2. Data Privacy: Your personal information will be collected, stored and used solely for app features. By registering, you consent to our data handling practices.\n\n'
+                  '3. Use of the application: This app is exclusively designed for uniform and merchandise reservations. Misuse of the app for unauthorized purposes may result in the immediate termination of your account and punishment of the user.\n\n'
+                  '4. Eligibility: Only students or authorized personnel connected with STI College Batangas may register. By registering, you confirm that you meet the eligibility requirements.\n\n'
+                  '5. Agreement: By clicking the "Accept" button, you confirm that you have read, understand, and agree to the terms and conditions.\n\n',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              Row(
+                children: [
+                  Checkbox(
+                    value: isChecked,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        isChecked = value ?? false;
+                      });
+                    },
+                  ),
+                  const Flexible(
+                    child: Text(
+                      'I have read and agree to the Terms and Conditions.',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+              TextButton(
+                child: Text(
+                  'Accept',
+                  style: TextStyle(
+                    color: isChecked
+                        ? Theme.of(context).primaryColor
+                        : Colors.grey,
+                  ),
+                ),
+                onPressed: isChecked
+                    ? () {
+                        Navigator.of(context).pop();
+                        _showEmailVerificationDialog(parentContext); // Use parentContext
+                      }
+                    : null,
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+void _showEmailVerificationDialog(BuildContext context) async {
+  try {
+    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      email: email.text,
+      password: password.text,
     );
+
+    await userCredential.user!.sendEmailVerification();
+
+    await _firestore.collection('users').doc(userCredential.user!.uid).set({
+      'userId': userCredential.user!.uid,
+      'name': name.text,
+      'email': email.text,
+      'studentId': studentId.text,
+      'contactNumber': contactNumber.text,
+      'createdAt': Timestamp.now(),
+    });
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Email Verification'),
+          content: const Text(
+              'A verification email has been sent to your email address. Please verify to complete your registration.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  } catch (e) {
+    _showErrorDialog(e.toString());
   }
+}
 
   void _showErrorDialog(String message) {
     showDialog(

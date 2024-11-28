@@ -79,9 +79,7 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
 
           // Filter sizes to only include those with quantity > 0
           setState(() {
-            availableSizes = sizeQuantities.keys
-                .where((size) => sizeQuantities[size]! > 0)
-                .toList();
+            availableSizes = sizeQuantities.keys.toList();
           });
         } else {
           setState(() {
@@ -112,6 +110,30 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
       return true;
     }
     return false;
+  }
+
+  bool get disablePreOrder {
+  if (_selectedSize.isEmpty || sizeQuantities[_selectedSize] == null) {
+    return true; // Disable if no size is selected or size data is unavailable.
+  }
+
+  if (sizeQuantities[_selectedSize]! > 0) {
+    return true; // Disable if stock is available for the selected size.
+  }
+
+  return false; // Enable pre-order only when stock is zero.
+  }
+
+  bool get shouldShowMessage {
+  if (_selectedSize.isEmpty) {
+    return true; // Show message if no size is selected.
+  }
+
+  if (sizeQuantities[_selectedSize] == null || sizeQuantities[_selectedSize]! <= 0) {
+    return false; // Don't show the message for valid pre-order items (out of stock but size selected).
+  }
+
+  return false; // Hide message if stock is available for the selected size.
   }
 
   void showSizeNotSelectedDialog() {
@@ -223,78 +245,77 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
     }
   }
 
-  Widget _buildButtonsRow() {
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: disableButtons ? null : handleCheckout,
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                backgroundColor:
-                    disableButtons ? Colors.grey : Color(0xFFFFEB3B),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+Widget _buildButtonsRow() {
+  return Center(
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: disableButtons ? null : handleCheckout,
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              backgroundColor: disableButtons ? Colors.grey : Color(0xFFFFEB3B),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(
-                'Checkout',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 31, 31, 31),
-                ),
+            ),
+            child: const Text(
+              'Checkout',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 31, 31, 31),
               ),
             ),
           ),
-          SizedBox(width: 10),
-          Expanded(
-            child: OutlinedButton(
-              onPressed: disableButtons ? null : handleAddToCart,
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                side: BorderSide(color: Colors.blue, width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: OutlinedButton(
+            onPressed: disableButtons ? null : handleAddToCart,
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              side: BorderSide(color: disableButtons ? Colors.grey : Colors.blue, width: 2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(
-                'Add to Cart',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
-                ),
+            ),
+            child: Text(
+              'Add to Cart',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: disableButtons ? Color.fromARGB(255, 31, 31, 31) : Colors.blue,
               ),
             ),
           ),
-          SizedBox(width: 10),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: handlePreOrder,
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                backgroundColor: Color(0xFF4CAF50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: disablePreOrder ? null : handlePreOrder,
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              backgroundColor: disablePreOrder ? Colors.grey : Color(0xFF4CAF50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(
-                'Pre-order',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+            ),
+            child: const Text(
+              'Pre-order',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   void viewImage() {
     showDialog(
@@ -357,7 +378,7 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildButtonsRow(),
-                if (disableButtons)
+                if (shouldShowMessage)
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),
                     child: Text(
@@ -374,27 +395,40 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
     );
   }
 
-  Widget _buildSizeSelector() {
-    return DropdownButton<String>(
+Widget _buildSizeSelector() {
+  return AbsorbPointer(
+    absorbing: availableSizes.isEmpty, // Disable interactions when empty
+    child: DropdownButton<String>(
       value: _selectedSize.isEmpty ? null : _selectedSize,
       hint: Text('Select Size'),
       items: availableSizes.map((size) {
+        int availableQuantity = sizeQuantities[size] ?? 0;
+
         return DropdownMenuItem(
           value: size,
-          child: Text(size),
+          child: Text(
+            availableQuantity > 0
+                ? '$size ($availableQuantity available)'
+                : '$size (Pre-order)', // Mark out-of-stock items as "Pre-order"
+            style: TextStyle(
+              color: availableQuantity > 0 ? Colors.black : Colors.green,
+            ),
+          ),
         );
       }).toList(),
       onChanged: (value) {
         setState(() {
           _selectedSize = value ?? '';
-          _displayPrice = sizePrices[_selectedSize] ?? widget.price;
-          _availableQuantity = sizeQuantities[_selectedSize] ?? 0;
-          _currentQuantity =
-              1; // Reset quantity to 1 whenever a new size is selected
+          _currentQuantity = 1; // Reset quantity to 1 for new size selection
         });
       },
-    );
-  }
+      disabledHint: Text(
+        'No Sizes Available',
+        style: TextStyle(color: Colors.grey),
+      ),
+    ),
+  );
+}
 
   Widget _buildQuantitySelector() {
     return Row(
@@ -412,8 +446,7 @@ class _DetailSelectionMerchState extends State<DetailSelectionMerch> {
         ),
         Text('$_currentQuantity'),
         IconButton(
-          onPressed: (_selectedSize.isNotEmpty &&
-                  (sizeQuantities[_selectedSize] ?? 0) > _currentQuantity)
+          onPressed: _currentQuantity < (sizeQuantities[_selectedSize] ?? 0)
               ? () {
                   setState(() {
                     _currentQuantity++;

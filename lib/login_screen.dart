@@ -104,35 +104,40 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 40),
               _isLoading
                   ? CircularProgressIndicator()
-                  : ElevatedButton(
+                  : SizedBox(
+                    width: 140, // Specify a fixed width
+                    child: ElevatedButton(
                       onPressed: () {
                         _login(context);
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
                         backgroundColor: Colors.yellow,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        padding: EdgeInsets.symmetric(vertical: 15), // Remove horizontal padding
                       ),
                       child: Text('Login'),
                     ),
+                  ),
               SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RegisterPage(),
+              SizedBox(
+                  width: 140, // Match the same fixed width
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RegisterPage(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueAccent,
+                      padding: EdgeInsets.symmetric(vertical: 15), // Remove horizontal padding
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    child: Text('Register'),
+                  ),
                 ),
-                child: Text('Register'),
-              ),
               SizedBox(height: 10),
               TextButton(
                 onPressed: () {

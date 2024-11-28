@@ -575,8 +575,6 @@ class _HomePageState extends State<HomePage> {
               label,
               style: TextStyle(
                 color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
               ),
               textAlign: TextAlign.center, // Center the text
             ),

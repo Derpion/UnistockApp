@@ -34,6 +34,7 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
   List<String> availableSizes = [];
   Map<String, int?> sizePrices = {};
   Map<String, int> sizeQuantities = {};
+  List<String> preOrderSizes = [];
   int _displayPrice = 0;
   int _availableQuantity = 0;
 
@@ -58,12 +59,16 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
 
       if (doc.exists) {
         Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
+
         if (data != null) {
           // Extract sizes, prices, and quantities
-          if (data.containsKey('sizes') && data['sizes'] is Map<String, dynamic>) {
+          if (data.containsKey('sizes') &&
+              data['sizes'] is Map<String, dynamic>) {
             var sizesData = data['sizes'] as Map<String, dynamic>;
+
             sizePrices = sizesData.map((size, details) {
-              if (details is Map<String, dynamic> && details.containsKey('price')) {
+              if (details is Map<String, dynamic> &&
+                  details.containsKey('price')) {
                 return MapEntry(size, details['price'] as int?);
               } else {
                 return MapEntry(size, null);
@@ -71,7 +76,8 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
             });
 
             sizeQuantities = sizesData.map((size, details) {
-              if (details is Map<String, dynamic> && details.containsKey('quantity')) {
+              if (details is Map<String, dynamic> &&
+                  details.containsKey('quantity')) {
                 return MapEntry(size, details['quantity'] ?? 0);
               } else {
                 return MapEntry(size, 0);
@@ -82,8 +88,14 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
                 .where((size) => sizeQuantities[size]! > 0)
                 .toList();
 
+            // Show pre-orderable sizes (those with 0 quantity)
+            preOrderSizes = sizeQuantities.keys
+                .where((size) => sizeQuantities[size]! == 0)
+                .toList();
+
             setState(() {
-              _selectedSize = availableSizes.isNotEmpty ? availableSizes.first : '';
+              _selectedSize =
+                  availableSizes.isNotEmpty ? availableSizes.first : '';
               _availableQuantity = availableSizes.isNotEmpty
                   ? sizeQuantities[_selectedSize] ?? 0
                   : 0;
@@ -229,10 +241,12 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     final int? sizePrice = sizePrices[_selectedSize];
     final int displayPrice = sizePrice ?? widget.price;
+
+    // Check if the selected size is a pre-order size
+    bool isPreOrderSelected = preOrderSizes.contains(_selectedSize);
 
     return Scaffold(
       appBar: AppBar(
@@ -259,9 +273,10 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
                     Text(
                       widget.label,
                       style:
-                      TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                    if (availableSizes.isNotEmpty) ...[
+                    if (availableSizes.isNotEmpty ||
+                        preOrderSizes.isNotEmpty) ...[
                       SizedBox(height: 10),
                       _buildSizeSelector(),
                     ],
@@ -281,9 +296,9 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildButtonsRow(),
-                //show out of stock message only when no stocks available for the selected size
-                if (sizeQuantities[_selectedSize] == 0 || _selectedSize.isEmpty)
+                _buildButtonsRow(isPreOrderSelected), // Pass the pre-order flag
+                // Show out of stock or pre-order message only when no size is selected
+                if (_selectedSize.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),
                     child: Text(
@@ -300,7 +315,10 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
     );
   }
 
-  Widget _buildButtonsRow() {
+  Widget _buildButtonsRow(bool isPreOrderSelected) {
+    // Determine whether buttons should be enabled based on pre-order selection
+    bool disableButtons = isPreOrderSelected;
+
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -311,7 +329,7 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
                 backgroundColor:
-                disableButtons ? Colors.grey : Color(0xFFFFEB3B),
+                    disableButtons ? Colors.grey : Color(0xFFFFEB3B),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -332,17 +350,21 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
               onPressed: disableButtons ? null : handleAddToCart,
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                side: BorderSide(color: Colors.blue, width: 2),
+                side: BorderSide(
+                    color: disableButtons ? Colors.grey : Colors.blue,
+                    width: 2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Add to Cart',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: disableButtons
+                      ? Color.fromARGB(255, 31, 31, 31)
+                      : Colors.blue,
                 ),
               ),
             ),
@@ -350,10 +372,14 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
           const SizedBox(width: 10),
           Expanded(
             child: ElevatedButton(
-              onPressed: handlePreOrder,
+              onPressed: isPreOrderSelected
+                  ? handlePreOrder
+                  : null, // Only enable if pre-order is selected
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                backgroundColor: Color(0xFF4CAF50),
+                backgroundColor: isPreOrderSelected
+                    ? Color(0xFF4CAF50) // Green if pre-order available
+                    : Colors.grey, // Gray if size has stock
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -375,18 +401,21 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
 
   Widget _buildSizeSelector() {
     return AbsorbPointer(
-      absorbing: availableSizes.isEmpty, // Disable interactions when empty
+      absorbing: availableSizes.isEmpty &&
+          preOrderSizes.isEmpty, // Disable interactions when no sizes
       child: DropdownButton<String>(
         value: _selectedSize.isEmpty ? null : _selectedSize,
         hint: const Text('Select Size'),
-        items: availableSizes.map((size) {
-          // Fetch the available quantity for the size
+        items: [...availableSizes, ...preOrderSizes].map((size) {
           int availableQuantity = sizeQuantities[size] ?? 0;
           return DropdownMenuItem(
-            value: size,
-            child: Text(
-                '$size (${availableQuantity} available)'), // Display size with available quantity
-          );
+              value: size,
+              child: Text(
+                '$size (${availableQuantity == 0 ? "Pre-order" : availableQuantity} available)',
+                style: TextStyle(
+                  color: availableQuantity > 0 ? Colors.black : Colors.green,
+                ),
+              ));
         }).toList(),
         onChanged: (value) {
           setState(() {
@@ -409,10 +438,10 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
         IconButton(
           onPressed: _currentQuantity > 1
               ? () {
-            setState(() {
-              _currentQuantity--;
-            });
-          }
+                  setState(() {
+                    _currentQuantity--;
+                  });
+                }
               : null,
           icon: const Icon(Icons.remove),
         ),
@@ -420,10 +449,10 @@ class _DetailSelectionProState extends State<DetailSelectionPro> {
         IconButton(
           onPressed: _currentQuantity < _availableQuantity
               ? () {
-            setState(() {
-              _currentQuantity++;
-            });
-          }
+                  setState(() {
+                    _currentQuantity++;
+                  });
+                }
               : null,
           icon: const Icon(Icons.add),
         ),

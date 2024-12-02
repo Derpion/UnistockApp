@@ -68,7 +68,8 @@ class _PreOrderPageState extends State<PreOrderPage> {
       CartItem item = CartItem.fromFirestore(doc);
 
       // If courseLabel is missing, infer it dynamically
-      if (item.category.toLowerCase() == 'proware & pe' && (item.courseLabel == null || item.courseLabel == 'Unknown')) {
+      if (item.category.toLowerCase() == 'proware & pe' &&
+          (item.courseLabel == null || item.courseLabel == 'Unknown')) {
         // Infer courseLabel dynamically based on Firestore structure
         item = item.copyWith(courseLabel: doc['subcategory'] ?? 'Unknown');
       }
@@ -316,11 +317,13 @@ class _PreOrderPageState extends State<PreOrderPage> {
             height: 300,
             child: SingleChildScrollView(
               child: Text(
-                '1. Pre-order Agreement: By placing a pre-order, you agree to pay in advance for items that will be delivered at a later date...\n\n'
-                '2. Expected Delivery: Pre-order items may have longer delivery times. Please review the expected delivery date before confirming...\n\n'
-                '3. Changes and Cancellations: You can cancel your pre-order before the expected shipment date. Once processed, cancellations may not be allowed...\n\n'
-                '4. Payment Terms: Full payment is required at the time of pre-order confirmation. We will notify you of any delays...\n\n'
-                '5. Contact: For any inquiries, please reach out to [Contact Information].',
+                'PROWARE POLICY\n\n'
+                '1. No Cancellation or Refunds: Once you have checked out your order, it is considered final. Orders cannot be cancelled or refunded under any circumstances.\n\n'
+                '2. Payment Responsibility: After checking out, you are responsible for paying for your ordered items as soon as possible at the school cashier.\n\n'
+                '3. Accuracy of Order Details: You are responsible for providing accurate information during the reservation process (e.g., item, size, quantity). UniStock will not be liable for errors caused by incorrect user inputs.\n\n'
+                '4. Payment Methods: Payments should be made at the school cashier. UniStock does not currently support online or mobile payment methods.\n\n'
+                '5. Data Privacy: Your personal information will be handled in accordance with our Privacy Policy. By using the app, you acknowledge that your information will be collected, stored, and used to process reservations and send you alerts.\n\n'
+                '6. Agreement to Policies: By checking out, you confirm that you have read and understood the payment, reservation, and refund policies.\n\n',
                 style: TextStyle(fontSize: 14),
               ),
             ),

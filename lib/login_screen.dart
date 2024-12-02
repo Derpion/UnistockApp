@@ -236,11 +236,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (userCredential.user != null) {
         await userCredential.user!.reload();
-        if (!userCredential.user!.emailVerified) {
-          await FirebaseAuth.instance.signOut();
-          _showErrorDialog('Please verify your email before logging in.');
-          return;
-        }
+        // if (!userCredential.user!.emailVerified) {
+        //   await FirebaseAuth.instance.signOut();
+        //   _showErrorDialog('Please verify your email before logging in.');
+        //   return;
+        // }
 
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')

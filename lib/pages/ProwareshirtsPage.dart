@@ -1,74 +1,14 @@
-import 'package:UNISTOCK/ProfileInfo.dart';
+import 'package:UNISTOCK/pages/SizeAndUniformSelectionPro.dart';
 import 'package:flutter/material.dart';
 import 'package:UNISTOCK/pages/CartPage.dart';
-import 'package:UNISTOCK/pages/CheckoutPage.dart';
+import 'package:UNISTOCK/pages/SizeAndUniformSelection.dart';
+import 'package:UNISTOCK/ProfileInfo.dart'; // Import ProfileInfo class
 
-class ProwareShirtsPage extends StatefulWidget {
-  final ProfileInfo currentProfileInfo; // Ensure this parameter is defined
+class ProwareShirtsPage extends StatelessWidget {
+  final ProfileInfo currentProfileInfo;
 
-  ProwareShirtsPage({required this.currentProfileInfo}); // Required parameter in constructor
-
-  @override
-  _ProwareShirtsPageState createState() => _ProwareShirtsPageState();
-}
-
-class _ProwareShirtsPageState extends State<ProwareShirtsPage> {
-  String selectedSize = '';
-  String selectedShirtType = 'College'; // Default selection
-  PageController _pageController = PageController(viewportFraction: 0.9);
-  int _currentPage = 0;
-
-  // Image paths for shirts
-  final String collegeShirtImage = 'assets/images/washdayshirt1.png';
-  final String shsShirtImage = 'assets/images/SHS_WASHDAY.png';
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void handleAddToCart() {
-    if (selectedSize.isNotEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Item Added to Cart'),
-            content: Text(
-              'Added to cart: $selectedShirtType Wash-Day Shirt, Size $selectedSize',
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Please select a size'),
-            content: Text('You haven\'t selected a size for your shirt.'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-  }
+  ProwareShirtsPage(
+      {required this.currentProfileInfo});
 
   @override
   Widget build(BuildContext context) {
@@ -112,174 +52,30 @@ class _ProwareShirtsPageState extends State<ProwareShirtsPage> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
-                  'Choose your Proware/Wash-Day Shirt',
+                  'Choose your uniform',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              Container(
-                height: MediaQuery.of(context).size.width * 0.8,
-                child: Stack(
-                  children: [
-                    PageView(
-                      controller: _pageController,
-                      onPageChanged: (int page) {
-                        setState(() {
-                          _currentPage = page;
-                        });
-                      },
-                      children: [
-                        selectedShirtType == 'College'
-                            ? buildShirtImage(collegeShirtImage)
-                            : buildShirtImage(shsShirtImage),
-                      ],
-                    ),
-                    Positioned(
-                      bottom: 20,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          1,
-                              (index) => buildPageIndicator(index),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              buildImageOption(
+                context,
+                'assets/images/NSTP.jpeg',
+                'NSTP',
+                'NSTP',
               ),
-              SizedBox(height: 16),
-              Text(
-                'ProWare/Wash-Day Shirt',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              buildImageOption(
+                context,
+                'assets/images/PE1.jpeg',
+                'PE',
+                'PE',
               ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: buildShirtTypeOption(
-                        context,
-                        'College Wash Day',
-                        selectedShirtType == 'College',
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: buildShirtTypeOption(
-                        context,
-                        'SHS Wash Day',
-                        selectedShirtType == 'SHS',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8.0,
-                runSpacing: 8.0,
-                children: buildSizeSelection(context),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle checkout
-                      if (selectedSize.isNotEmpty) {
-                        final int unitPrice = 195; // Define the unit price
-                        final int totalPrice = unitPrice * 1; // Assuming quantity is 1 for now
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CheckoutPage(
-                              category: 'Proware',
-                              label: '$selectedShirtType Wash-Day Shirt',
-                              itemSize: selectedSize,
-                              imagePath: selectedShirtType == 'College'
-                                  ? collegeShirtImage
-                                  : shsShirtImage,
-                              unitPrice: unitPrice, // Pass the unit price here
-                              price: totalPrice, // Pass the total price here
-                              quantity: 1,
-                              currentProfileInfo: widget.currentProfileInfo, // Pass the profile info
-                            ),
-                          ),
-                        );
-                      } else {
-                        // Show an alert dialog to prompt size selection
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Please select a size'),
-                              content: Text(
-                                  'You haven\'t selected a size for your shirt.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: Text('OK'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop(); // Close the dialog
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: Text(
-                      'Confirm',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  OutlinedButton(
-                    onPressed: () {
-                      // Handle add to cart
-                      handleAddToCart();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding:
-                      EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      side: BorderSide(color: Colors.blue, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: Text(
-                      'Add to Cart',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                ],
+              buildImageOption(
+                context,
+                'assets/images/Proware1.jpeg',
+                'Proware',
+                'Proware',
               ),
             ],
           ),
@@ -288,86 +84,48 @@ class _ProwareShirtsPageState extends State<ProwareShirtsPage> {
     );
   }
 
-  Widget buildShirtTypeOption(
-      BuildContext context, String label, bool isSelected) {
-    return GestureDetector(
+  Widget buildImageOption(BuildContext context, String imagePath, String label, String courseLabel) {
+    return InkWell(
       onTap: () {
-        setState(() {
-          selectedShirtType = label.contains('College') ? 'College' : 'SHS';
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProwareUniSelectionPage(
+              courseLabel: courseLabel,
+              currentProfileInfo:
+              currentProfileInfo,
+            ),
+          ),
+        );
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10),
+        width: MediaQuery.of(context).size.width * 0.9,
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.blue, width: 2),
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.blue,
+        margin: EdgeInsets.symmetric(vertical: 8.0),
+        child: Column(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 180,
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Widget> buildSizeSelection(BuildContext context) {
-    List<String> sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
-    return sizes.map((size) {
-      bool isSelected = size == selectedSize;
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedSize = size; // Update selected size
-          });
-        },
-        child: Container(
-          padding: EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.blue : Colors.blue[50],
-            border: Border.all(color: Colors.blue, width: 2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            size,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.blue,
+            SizedBox(height: 8.0),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
+          ],
         ),
-      );
-    }).toList();
-  }
-
-  Widget buildShirtImage(String imagePath) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
-  }
-
-  Widget buildPageIndicator(int index) {
-    return Container(
-      width: 8,
-      height: 8,
-      margin: EdgeInsets.symmetric(horizontal: 4.0),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: _currentPage == index ? Colors.blue : Colors.grey,
       ),
     );
   }

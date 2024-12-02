@@ -10,7 +10,7 @@ class CartItem {
   int quantity;
   bool selected;
   final String category;
-  final String courseLabel;
+  String courseLabel;
   List<DocumentReference> documentReferences;
 
   CartItem({
@@ -23,12 +23,19 @@ class CartItem {
     this.quantity = 1,
     this.selected = false,
     required this.category,
-    required this.courseLabel,
+    this.courseLabel = 'Unknown',
     this.documentReferences = const [],
   });
 
+  /// Factory constructor for creating CartItem from Firestore
   factory CartItem.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
+    String inferredCourseLabel = data['courseLabel'] ?? 'Unknown';
+    if (inferredCourseLabel == 'Unknown' && data['category'] == 'Proware & PE') {
+      inferredCourseLabel = data['subcategory'] ?? 'Unknown'; // Infer from subcategory
+    }
+
     return CartItem(
       id: doc.id,
       label: data['label'] ?? 'Unknown',
@@ -39,7 +46,7 @@ class CartItem {
       quantity: data['quantity'] ?? 1,
       selected: data['selected'] ?? false,
       category: data['category'] ?? 'Unknown',
-      courseLabel: data['courseLabel'] ?? 'Unknown',
+      courseLabel: inferredCourseLabel, // Dynamically assign
       documentReferences: [doc.reference],
     );
   }
@@ -60,5 +67,39 @@ class CartItem {
 
   void addDocumentReference(DocumentReference ref) {
     documentReferences.add(ref);
+  }
+
+  void updateCourseLabel(String newCourseLabel) {
+    if (courseLabel == 'Unknown' || courseLabel.isEmpty) {
+      courseLabel = newCourseLabel;
+    }
+  }
+
+  CartItem copyWith({
+    String? id,
+    String? label,
+    String? imagePath,
+    List<String>? availableSizes,
+    String? selectedSize,
+    int? price,
+    int? quantity,
+    bool? selected,
+    String? category,
+    String? courseLabel,
+    List<DocumentReference>? documentReferences,
+  }) {
+    return CartItem(
+      id: id ?? this.id,
+      label: label ?? this.label,
+      imagePath: imagePath ?? this.imagePath,
+      availableSizes: availableSizes ?? this.availableSizes,
+      selectedSize: selectedSize ?? this.selectedSize,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+      selected: selected ?? this.selected,
+      category: category ?? this.category,
+      courseLabel: courseLabel ?? this.courseLabel,
+      documentReferences: documentReferences ?? this.documentReferences,
+    );
   }
 }

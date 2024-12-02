@@ -26,8 +26,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final String passwordPattern =
       r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}$';
-  final String emailPattern =
-      r'^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|hotmail\.com|outlook\.com|batangas\.sti\.edu\.ph)$';
+  final String emailPattern = r'^[a-zA-Z0-9._%+-]+@(batangas\.sti\.edu\.ph)$';
 
   @override
   Widget build(BuildContext context) {

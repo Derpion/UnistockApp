@@ -93,24 +93,35 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
             }
           });
 
-          // Filter sizes to only include those with quantity > 0
-          availableSizes = sizeQuantities.keys
-              .where((size) => sizeQuantities[size]! > 0)
-              .toList();
+          // Define size order
+          List<String> sizeOrder = [
+            'XS',
+            'Small',
+            'Medium',
+            'Large',
+            'XL',
+            '2XL',
+            '3XL',
+            '4XL',
+            '5XL',
+            '6XL',
+            '7XL'
+          ];
 
-          String defaultSize =
-              availableSizes.isNotEmpty ? availableSizes.first : '';
-          int initialQuantity =
-              defaultSize.isNotEmpty ? sizeQuantities[defaultSize] ?? 0 : 0;
-          int initialPrice =
-              defaultSize.isNotEmpty && sizePrices[defaultSize] != null
-                  ? sizePrices[defaultSize]!
-                  : widget.price;
+          // Filter sizes to only include those with quantity > 0
+          availableSizes = sizeQuantities.keys.toList();
+
+          availableSizes.sort((a, b) {
+            int indexA = sizeOrder.indexOf(a);
+            int indexB = sizeOrder.indexOf(b);
+            return indexA.compareTo(indexB);
+          });
 
           setState(() {
-            _selectedSize = _selectedSize.isEmpty ? defaultSize : _selectedSize;
-            _availableQuantity = initialQuantity;
-            _displayPrice = initialPrice;
+            _selectedSize = '';
+            _availableQuantity =
+                0; // Default to 0 until the user selects a size
+            _displayPrice = widget.price; // Default price
           });
         } else {
           setState(() {
@@ -145,11 +156,37 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
       return true;
     }
 
-    if (_availableQuantity == 0) {
+    if (sizeQuantities[_selectedSize] == null ||
+        sizeQuantities[_selectedSize]! < _currentQuantity) {
       return true;
     }
 
     return false;
+  }
+
+  bool get disablePreOrder {
+    if (_selectedSize.isEmpty || sizeQuantities[_selectedSize] == null) {
+      return true; // Disable if no size is selected or size data is unavailable.
+    }
+
+    if (sizeQuantities[_selectedSize]! > 0) {
+      return true; // Disable if stock is available for the selected size.
+    }
+
+    return false; // Enable pre-order only when stock is zero.
+  }
+
+  bool get shouldShowMessage {
+    if (_selectedSize.isEmpty) {
+      return true; // Show message if no size is selected.
+    }
+
+    if (sizeQuantities[_selectedSize] == null ||
+        sizeQuantities[_selectedSize]! <= 0) {
+      return false; // Don't show the message for valid pre-order items (out of stock but size selected).
+    }
+
+    return false; // Hide message if stock is available for the selected size.
   }
 
   void showSizeNotSelectedDialog() {
@@ -320,7 +357,7 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
               children: [
                 _buildButtonsRow(),
                 //show out of stock message only when no stocks available for the selected size
-                if (sizeQuantities[_selectedSize] == 0 || _selectedSize.isEmpty)
+                if (shouldShowMessage)
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),
                     child: Text(
@@ -369,17 +406,21 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
               onPressed: disableButtons ? null : handleAddToCart,
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                side: BorderSide(color: Colors.blue, width: 2),
+                side: BorderSide(
+                    color: disableButtons ? Colors.grey : Colors.blue,
+                    width: 2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Add to Cart',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: disableButtons
+                      ? Color.fromARGB(255, 31, 31, 31)
+                      : Colors.blue,
                 ),
               ),
             ),
@@ -387,15 +428,16 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
           const SizedBox(width: 10),
           Expanded(
             child: ElevatedButton(
-              onPressed: handlePreOrder,
+              onPressed: disablePreOrder ? null : handlePreOrder,
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                backgroundColor: Color(0xFF4CAF50),
+                backgroundColor:
+                    disablePreOrder ? Colors.grey : Color(0xFF4CAF50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Pre-order',
                 style: TextStyle(
                   fontSize: 16,
@@ -415,14 +457,20 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
       absorbing: availableSizes.isEmpty, // Disable interactions when empty
       child: DropdownButton<String>(
         value: _selectedSize.isEmpty ? null : _selectedSize,
-        hint: const Text('Select Size'),
+        hint: Text('Select Size'),
         items: availableSizes.map((size) {
-          // Fetch the available quantity for the size
           int availableQuantity = sizeQuantities[size] ?? 0;
+
           return DropdownMenuItem(
             value: size,
             child: Text(
-                '$size (${availableQuantity} available)'), // Display size with available quantity
+              availableQuantity > 0
+                  ? '$size ($availableQuantity available)'
+                  : '$size (Pre-order)', // Mark out-of-stock items as "Pre-order"
+              style: TextStyle(
+                color: availableQuantity > 0 ? Colors.black : Colors.green,
+              ),
+            ),
           );
         }).toList(),
         onChanged: (value) {
@@ -431,7 +479,7 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
             _currentQuantity = 1; // Reset quantity to 1 for new size selection
           });
         },
-        disabledHint: const Text(
+        disabledHint: Text(
           'No Sizes Available',
           style: TextStyle(color: Colors.grey),
         ),
@@ -442,7 +490,7 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
   Widget _buildQuantitySelector() {
     return Row(
       children: [
-        const Text('Quantity:'),
+        Text('Quantity:'),
         IconButton(
           onPressed: _currentQuantity > 1
               ? () {
@@ -451,18 +499,18 @@ class _DetailSelectionCOLState extends State<DetailSelectionCOL> {
                   });
                 }
               : null,
-          icon: const Icon(Icons.remove),
+          icon: Icon(Icons.remove),
         ),
         Text('$_currentQuantity'),
         IconButton(
-          onPressed: _currentQuantity < _availableQuantity
+          onPressed: _currentQuantity < (sizeQuantities[_selectedSize] ?? 0)
               ? () {
                   setState(() {
                     _currentQuantity++;
                   });
                 }
               : null,
-          icon: const Icon(Icons.add),
+          icon: Icon(Icons.add),
         ),
       ],
     );

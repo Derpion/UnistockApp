@@ -66,6 +66,13 @@ class _PreOrderPageState extends State<PreOrderPage> {
       }
 
       CartItem item = CartItem.fromFirestore(doc);
+
+      // If courseLabel is missing, infer it dynamically
+      if (item.category.toLowerCase() == 'proware & pe' && (item.courseLabel == null || item.courseLabel == 'Unknown')) {
+        // Infer courseLabel dynamically based on Firestore structure
+        item = item.copyWith(courseLabel: doc['subcategory'] ?? 'Unknown');
+      }
+
       String uniqueKey = "${item.label}_${item.selectedSize}";
 
       if (groupedItems.containsKey(uniqueKey)) {
@@ -83,7 +90,7 @@ class _PreOrderPageState extends State<PreOrderPage> {
           courseLabel: existingItem.courseLabel,
           documentReferences: [
             ...existingItem.documentReferences,
-            doc.reference
+            doc.reference,
           ],
         );
       } else {
@@ -137,10 +144,8 @@ class _PreOrderPageState extends State<PreOrderPage> {
             'courseLabel': item.courseLabel,
           };
 
-          // Add item to preOrderDetails for saving the pre-order
           preOrderDetails.add(itemData);
 
-          // Add item to orderSummary for the notification
           orderSummary.add({
             'label': item.label,
             'itemSize': item.selectedSize ?? 'N/A',

@@ -84,8 +84,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           });
 
                           try {
-                            final int totalPrice =
-                                widget.price * widget.quantity;
+                            final int totalPrice = widget.unitPrice * widget.quantity;
 
                             print(
                                 "Placing Order - Item: ${widget.label}, Price: ${widget.price}, Quantity: ${widget.quantity}, Total: $totalPrice");
@@ -405,7 +404,7 @@ class PurchaseSummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int totalCost = price * quantity;
+    final int totalCost = price; // Use the passed `price` directly as it represents the total cost
 
     return Scaffold(
       appBar: AppBar(
@@ -436,8 +435,7 @@ class PurchaseSummaryPage extends StatelessWidget {
                     image: DecorationImage(
                       image: imagePath.isNotEmpty
                           ? NetworkImage(imagePath)
-                          : AssetImage('assets/icons/default_icon.png')
-                              as ImageProvider,
+                          : AssetImage('assets/icons/default_icon.png') as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -462,7 +460,7 @@ class PurchaseSummaryPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Price: ₱$price',
+                        'Price: ₱${price ~/ quantity}', // Unit price
                         style: TextStyle(
                           fontSize: 16,
                         ),
@@ -474,7 +472,7 @@ class PurchaseSummaryPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Total: ₱$totalCost',
+                        'Total: ₱$totalCost', // Use totalCost directly
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -502,8 +500,8 @@ class PurchaseSummaryPage extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => UniformPage(
-                                      currentProfileInfo: currentProfileInfo)),
+                                  builder: (context) =>
+                                      UniformPage(currentProfileInfo: currentProfileInfo)),
                             );
                           }
                         },
@@ -514,8 +512,8 @@ class PurchaseSummaryPage extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => MerchAccessoriesPage(
-                                      currentProfileInfo: currentProfileInfo)),
+                                  builder: (context) =>
+                                      MerchAccessoriesPage(currentProfileInfo: currentProfileInfo)),
                             );
                           }
                         },
@@ -526,8 +524,8 @@ class PurchaseSummaryPage extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ProfilePage(
-                                    profileInfo: currentProfileInfo),
+                                builder: (context) =>
+                                    ProfilePage(profileInfo: currentProfileInfo),
                               ),
                             );
                           }

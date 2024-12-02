@@ -104,34 +104,41 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 40),
               _isLoading
                   ? CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: () {
-                        _login(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        backgroundColor: Colors.yellow,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  : SizedBox(
+                      width: 140, // Specify a fixed width
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _login(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.black,
+                          backgroundColor: Colors.yellow,
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15), // Remove horizontal padding
+                        ),
+                        child: Text('Login'),
                       ),
-                      child: Text('Login'),
                     ),
               SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RegisterPage(),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              SizedBox(
+                width: 140, // Match the same fixed width
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RegisterPage(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blueAccent,
+                    padding: EdgeInsets.symmetric(
+                        vertical: 15), // Remove horizontal padding
+                  ),
+                  child: Text('Register'),
                 ),
-                child: Text('Register'),
               ),
               SizedBox(height: 10),
               TextButton(
@@ -236,11 +243,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (userCredential.user != null) {
         await userCredential.user!.reload();
-        // if (!userCredential.user!.emailVerified) {
-        //   await FirebaseAuth.instance.signOut();
-        //   _showErrorDialog('Please verify your email before logging in.');
-        //   return;
-        // }
+        if (!userCredential.user!.emailVerified) {
+          await FirebaseAuth.instance.signOut();
+          _showErrorDialog('Please verify your email before logging in.');
+          return;
+        }
 
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')

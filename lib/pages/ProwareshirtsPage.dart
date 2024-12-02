@@ -7,8 +7,7 @@ import 'package:UNISTOCK/ProfileInfo.dart'; // Import ProfileInfo class
 class ProwareShirtsPage extends StatelessWidget {
   final ProfileInfo currentProfileInfo;
 
-  ProwareShirtsPage(
-      {required this.currentProfileInfo});
+  ProwareShirtsPage({required this.currentProfileInfo});
 
   @override
   Widget build(BuildContext context) {
@@ -61,19 +60,19 @@ class ProwareShirtsPage extends StatelessWidget {
               ),
               buildImageOption(
                 context,
-                'assets/images/NSTP.jpeg',
+                'assets/images/NSTP2.png',
                 'NSTP',
                 'NSTP',
               ),
               buildImageOption(
                 context,
-                'assets/images/PE1.jpeg',
+                'assets/images/PE1.png',
                 'PE',
                 'PE',
               ),
               buildImageOption(
                 context,
-                'assets/images/Proware1.jpeg',
+                'assets/images/proware1.png',
                 'Proware',
                 'Proware',
               ),
@@ -84,7 +83,8 @@ class ProwareShirtsPage extends StatelessWidget {
     );
   }
 
-  Widget buildImageOption(BuildContext context, String imagePath, String label, String courseLabel) {
+  Widget buildImageOption(BuildContext context, String imagePath, String label,
+      String courseLabel) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -92,8 +92,7 @@ class ProwareShirtsPage extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => ProwareUniSelectionPage(
               courseLabel: courseLabel,
-              currentProfileInfo:
-              currentProfileInfo,
+              currentProfileInfo: currentProfileInfo,
             ),
           ),
         );
